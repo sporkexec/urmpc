@@ -1,7 +1,6 @@
 import socket
 import mpd
 
-
 class MPDClient(object):
 	"""Wraps mpd.MPDClient to handle connection stupidity.
 
