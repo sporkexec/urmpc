@@ -1,6 +1,7 @@
 import urwid
-	
+
 class IOWalker(urwid.ListWalker):
+	emptytext = '[None]'
 	def __new__(cls, *args, **kwargs):
 		urwid.register_signal(cls, ['change'])
 		return super(IOWalker, cls).__new__(cls, *args, **kwargs)
@@ -22,9 +23,13 @@ class IOWalker(urwid.ListWalker):
 		if pos < 0:
 			return None, None
 		try:
-			item = urwid.Text(self.items[pos])
+			text = self.items[pos]
 		except IndexError as e:
 			return None, None
+		if text == '':
+			text = self.emptytext
+		item = urwid.Text(text)
+		item.set_wrap_mode('clip')
 		item = self._attrmap(item)
 		return item, pos
 	def _reload(self):
@@ -60,24 +65,39 @@ class AlbumWalker(IOWalker):
 	def _get_items(self):
 		return sorted(self.io.list('album', 'artist', self.artist))
 	def _attrmap(self, w):
-		return urwid.AttrMap(w, 'ArtistWalker_main', 'ArtistWalker_focus')
+		return urwid.AttrMap(w, 'AlbumWalker_main', 'AlbumWalker_focus')
 	def change_artist(self, value):
 		self.artist = value
 		self._reload()
 
 class TreeList(urwid.ListBox):
-	def __init__(self, walker):
-		self.walker = walker
-		super(TreeList, self).__init__(self.walker)
-	def keypress(self, size, k):
-		if k == 'j':
-			w, pos = self.walker.get_focus()
-			w, pos = self.walker.get_next(pos)
-			if w:
-				self.set_focus(pos)
-		if k == 'k':
-			w, pos = self.walker.get_focus()
-			w, pos = self.walker.get_prev(pos)
-			if w:
-				self.set_focus(pos)
+	keymap = {
+				'h': 'left',
+				'j': 'down',
+				'k': 'up',
+				'l': 'right',
+			}
+
+	def keypress(self, size, key):
+		if key in self.keymap:
+			key = self.keymap[key]
+		return super(TreeList, self).keypress(size, key)
+
+	def _keypress_up(self, size):
+		middle, top, bottom = self.calculate_visible(size, True)
+		if middle is not None and middle[0] == 0:
+			return super(TreeList, self)._keypress_up(size)
+		w, pos = self.body.get_focus()
+		w, pos = self.body.get_prev(pos)
+		if w:
+			self.set_focus(pos)
+
+	def _keypress_down(self, size):
+		middle, top, bottom = self.calculate_visible(size, True)
+		if middle is not None and middle[0] + 1 == size[1]:
+			return super(TreeList, self)._keypress_down(size)
+		w, pos = self.body.get_focus()
+		w, pos = self.body.get_next(pos)
+		if w:
+			self.set_focus(pos)
 
