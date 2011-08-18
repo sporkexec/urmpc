@@ -125,17 +125,28 @@ class TrackWalker(IOWalker):
 
 
 class TreeList(urwid.ListBox):
-	keymap = {
-				'h': 'left',
-				'j': 'down',
-				'k': 'up',
-				'l': 'right',
-			}
+	def __init__(self, *args, **kwargs):
+		self.keyremap = {
+			'h': 'left',
+			'j': 'down',
+			'k': 'up',
+			'l': 'right',
+			'g': 'home',
+			'G': 'end',
+		}
+		self.keymap = {
+			'home': self._scroll_top,
+			'end': self._scroll_bottom,
+		}
+		return super(TreeList, self).__init__(*args, **kwargs)
 
 	def keypress(self, size, key):
+		if key in self.keyremap:
+			key = self.keyremap[key]
 		if key in self.keymap:
-			key = self.keymap[key]
-		return super(TreeList, self).keypress(size, key)
+			return self.keymap[key]()
+		else:
+			return super(TreeList, self).keypress(size, key)
 
 	def _keypress_up(self, size):
 		middle, top, bottom = self.calculate_visible(size, True)
@@ -154,6 +165,11 @@ class TreeList(urwid.ListBox):
 		w, pos = self.body.get_next(pos)
 		if w:
 			self.set_focus(pos)
+
+	def _scroll_top(self):
+		self.set_focus(0)
+	def _scroll_bottom(self):
+		self.set_focus(len(self.body.items)-1)
 
 class MainFrame(urwid.Frame):
 	def __init__(self, mpc, *args, **kwargs):
