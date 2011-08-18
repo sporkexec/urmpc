@@ -83,6 +83,7 @@ class AlbumWalker(IOWalker):
 	def change_artist(self, value):
 		self.artist = value
 		self._reload()
+		self.set_focus(self.focus)
 	def _get_at_pos(self, pos):
 		item, pos = super(AlbumWalker, self)._get_at_pos(pos)
 		if item is None or pos is None:
@@ -112,7 +113,10 @@ class TrackWalker(IOWalker):
 		item, pos = super(TrackWalker, self)._get_at_pos(pos)
 		if item is None or pos is None:
 			return item, pos
-		text = item['title']
+		try:
+			text = item['title']
+		except KeyError as e:
+			text = item['file']
 		if text == '':
 			text = '[None]'
 		text = urwid.Text(text)
