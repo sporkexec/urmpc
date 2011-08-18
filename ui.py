@@ -155,3 +155,41 @@ class TreeList(urwid.ListBox):
 		if w:
 			self.set_focus(pos)
 
+class MainFrame(urwid.Frame):
+	def __init__(self, mpc, *args, **kwargs):
+		self.mpc = mpc
+		self.keymap = {
+			'p': self.mpc.playpause,
+			'>': self.mpc.next,
+			'<': self.mpc.previous,
+
+			's': self.mpc.stop,
+			'c': self.mpc.clear,
+			'Z': self.mpc.shuffle,
+			'u': self.mpc.update,
+			'-': self.mpc.volume_down,
+			'+': self.mpc.volume_up,
+			'b': lambda: self.mpc.urseek(-5, False, False), #FIXME config
+			'f': lambda: self.mpc.urseek(5, False, False), #FIXME config
+
+			'y': self.mpc.toggle('single'),
+			'r': self.mpc.toggle('repeat'),
+			'z': self.mpc.toggle('random'),
+			'R': self.mpc.toggle('consume'),
+			'x': self.mpc.toggle_crossfade,
+
+			'q': self.quit,
+			'Q': self.quit,
+		}
+		super(MainFrame, self).__init__(*args, **kwargs)
+
+	def keypress(self, size, key):
+		if key in self.keymap:
+			return self.keymap[key]()
+		else:
+			return super(MainFrame, self).keypress(size, key)
+
+	def quit(self):
+		raise urwid.ExitMainLoop()
+
+

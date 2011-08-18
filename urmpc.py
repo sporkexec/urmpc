@@ -5,7 +5,6 @@ import urwid
 
 import iompd
 import ui
-import globalkeys
 
 palette = [
 	('ArtistWalker_main', 'white', 'black'),
@@ -32,10 +31,9 @@ urwid.connect_signal(artist_walker, 'change', album_walker.change_artist)
 urwid.connect_signal(album_walker, 'change', track_walker.change_album)
 artist_walker.set_focus(artist_walker.focus) # Force a change event
 
-#FIXME: Put everything in a frame or something, avoid the global keybindings.
-keyhandler = globalkeys.GlobalKeys(io)
+librarypanel = urwid.Columns((artists, albums, tracks))
+frame = ui.MainFrame(io, librarypanel)
 
-main = urwid.Columns((artists, albums, tracks))
-loop = urwid.MainLoop(main, palette, unhandled_input=keyhandler.keypress)
+loop = urwid.MainLoop(frame, palette)
 loop.run()
 
