@@ -47,14 +47,14 @@ class IOWalker(urwid.ListWalker):
 
 @sends_signal('change')
 class ArtistWalker(IOWalker):
-	def __init__(self, io):
-		self.io = io
+	def __init__(self, mpc):
+		self.mpc = mpc
 		super(ArtistWalker, self).__init__()
 	def set_focus(self, focus):
 		super(ArtistWalker, self).set_focus(focus)
 		urwid.emit_signal(self, 'change', self.items[focus])
 	def _get_items(self):
-		return sorted(self.io.list('artist'))
+		return sorted(self.mpc.list('artist'))
 	def _attrmap(self, w):
 		return urwid.AttrMap(w, 'ArtistWalker_main', 'ArtistWalker_focus')
 	def _get_at_pos(self, pos):
@@ -67,17 +67,32 @@ class ArtistWalker(IOWalker):
 		item.set_wrap_mode('clip')
 		return self._attrmap(item), pos
 
+	def play_current(self):
+		song_id = self.queue_current()
+		if song_id is not None:
+			self.mpc.playid(song_id)
+	def queue_current(self):
+		item, pos = super(ArtistWalker, self)._get_at_pos(self.focus)
+		if item is None or pos is None:
+			return None
+		song_id = None
+		for song in self.mpc.find('artist', item):
+			sid = self.mpc.addid(song['file'])
+			if song_id is None:
+				song_id = sid
+		return song_id
+
 @sends_signal('change')
 class AlbumWalker(IOWalker):
-	def __init__(self, io, artist):
-		self.io = io
+	def __init__(self, mpc, artist):
+		self.mpc = mpc
 		self.artist = artist
 		super(AlbumWalker, self).__init__()
 	def set_focus(self, focus):
 		super(AlbumWalker, self).set_focus(focus)
 		urwid.emit_signal(self, 'change', (self.artist, self.items[focus]))
 	def _get_items(self):
-		return sorted(self.io.list('album', 'artist', self.artist))
+		return sorted(self.mpc.list('album', 'artist', self.artist))
 	def _attrmap(self, w):
 		return urwid.AttrMap(w, 'AlbumWalker_main', 'AlbumWalker_focus')
 	def change_artist(self, value):
@@ -94,15 +109,31 @@ class AlbumWalker(IOWalker):
 		item.set_wrap_mode('clip')
 		return self._attrmap(item), pos
 
+	def play_current(self):
+		song_id = self.queue_current()
+		if song_id is not None:
+			self.mpc.playid(song_id)
+	def queue_current(self):
+		item, pos = super(AlbumWalker, self)._get_at_pos(self.focus)
+		if item is None or pos is None:
+			return None
+		song_id = None
+		for song in self.mpc.find('artist', self.artist, 'album', item):
+			sid = self.mpc.addid(song['file'])
+			if song_id is None:
+				song_id = sid
+		return song_id
+
+
 class TrackWalker(IOWalker):
-	def __init__(self, io, artist, album):
-		self.io = io
+	def __init__(self, mpc, artist, album):
+		self.mpc = mpc
 		self.artist = artist
 		self.album = album
 		super(TrackWalker, self).__init__()
 	def _get_items(self):
 		#TODO: Make sure this sorts like it should.
-		return self.io.find('artist', self.artist, 'album', self.album)
+		return self.mpc.find('artist', self.artist, 'album', self.album)
 	def _attrmap(self, w):
 		return urwid.AttrMap(w, 'TrackWalker_main', 'TrackWalker_focus')
 	def change_album(self, artist_album):
@@ -123,6 +154,16 @@ class TrackWalker(IOWalker):
 		text.set_wrap_mode('clip')
 		return self._attrmap(text), pos
 
+	def play_current(self):
+		song_id = self.queue_current()
+		if song_id is not None:
+			self.mpc.playid(song_id)
+	def queue_current(self):
+		item, pos = super(TrackWalker, self)._get_at_pos(self.focus)
+		if item is None or pos is None:
+			return None
+		song_id = self.mpc.addid(item['file'])
+		return song_id
 
 class TreeList(urwid.ListBox):
 	def __init__(self, *args, **kwargs):
@@ -170,6 +211,18 @@ class TreeList(urwid.ListBox):
 		self.set_focus(0)
 	def _scroll_bottom(self):
 		self.set_focus(len(self.body.items)-1)
+
+
+class PlayableList(TreeList):
+	def __init__(self, *args, **kwargs):
+		super(PlayableList, self).__init__(*args, **kwargs)
+		self.keyremap.update({
+		})
+		self.keymap.update({
+			'enter': self.body.play_current,
+			' ': self.body.queue_current,
+		})
+	
 
 class MainFrame(urwid.Frame):
 	def __init__(self, mpc, *args, **kwargs):

@@ -19,13 +19,13 @@ io = iompd.MPDClient()
 io.connect('localhost', 6600)
 
 artist_walker = ui.ArtistWalker(io)
-artists = ui.TreeList(artist_walker)
+artists = ui.PlayableList(artist_walker)
 
 album_walker = ui.AlbumWalker(io, None)
-albums = ui.TreeList(album_walker)
+albums = ui.PlayableList(album_walker)
 
 track_walker = ui.TrackWalker(io, None, None)
-tracks = ui.TreeList(track_walker)
+tracks = ui.PlayableList(track_walker)
 
 urwid.connect_signal(artist_walker, 'change', album_walker.change_artist)
 urwid.connect_signal(album_walker, 'change', track_walker.change_album)
