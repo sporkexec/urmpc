@@ -162,7 +162,11 @@ class TrackWalker(IOWalker):
 		item, pos = super(TrackWalker, self)._get_at_pos(self.focus)
 		if item is None or pos is None:
 			return None
-		song_id = self.mpc.addid(item['file'])
+		song_id = None
+		for song in self.mpc.find('file', item['file']):
+			sid = self.mpc.addid(song['file'])
+			if song_id is None:
+				song_id = sid
 		return song_id
 
 class TreeList(urwid.ListBox):
