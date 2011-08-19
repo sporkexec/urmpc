@@ -3,7 +3,7 @@
 from urwid import MainLoop
 
 from urmpd import MPDClient
-from main_ui import MainFrame
+from ui_main import MainFrame
 
 palette = [
 	('ArtistWalker_main', 'white', 'black'),
