@@ -226,43 +226,27 @@ class PlayableList(TreeList):
 			'enter': self.body.play_current,
 			' ': self.body.queue_current,
 		})
-	
 
-class MainFrame(urwid.Frame):
-	def __init__(self, mpc, *args, **kwargs):
+#TODO: Make this watch playlist with mpc.idle('playlist')?
+class NowPlayingWalker(IOWalker):
+	def __init__(self, mpc):
 		self.mpc = mpc
-		self.keymap = {
-			'p': self.mpc.playpause,
-			'>': self.mpc.next,
-			'<': self.mpc.previous,
+		super(NowPlayingWalker, self).__init__()
+	def set_focus(self, focus):
+		super(NowPlayingWalker, self).set_focus(focus)
+		urwid.emit_signal(self, 'change', self.items[focus])
+	def _get_items(self):
+		return self.mpc.playlistinfo()
+	def _attrmap(self, w):
+		return urwid.AttrMap(w, 'NowPlayingWalker_main', 'NowPlayingWalker_focus')
+	def _get_at_pos(self, pos):
+		item, pos = super(NowPlayingWalker, self)._get_at_pos(pos)
+		if item is None or pos is None:
+			return item, pos
 
-			's': self.mpc.stop,
-			'c': self.mpc.clear,
-			'Z': self.mpc.shuffle,
-			'u': self.mpc.update,
-			'-': self.mpc.volume_down,
-			'+': self.mpc.volume_up,
-			'b': lambda: self.mpc.urseek(-5, False, False), #FIXME config
-			'f': lambda: self.mpc.urseek(5, False, False), #FIXME config
+		text = "Artist: %s, Album: %s, Title: %s, Length: %s" % (item['artist'], item['album'], item['title'], item['time'])
 
-			'y': self.mpc.toggle('single'),
-			'r': self.mpc.toggle('repeat'),
-			'z': self.mpc.toggle('random'),
-			'R': self.mpc.toggle('consume'),
-			'x': self.mpc.toggle_crossfade,
-
-			'q': self.quit,
-			'Q': self.quit,
-		}
-		super(MainFrame, self).__init__(*args, **kwargs)
-
-	def keypress(self, size, key):
-		if key in self.keymap:
-			return self.keymap[key]()
-		else:
-			return super(MainFrame, self).keypress(size, key)
-
-	def quit(self):
-		raise urwid.ExitMainLoop()
-
+		item = urwid.Text(text)
+		item.set_wrap_mode('clip')
+		return self._attrmap(item), pos
 
