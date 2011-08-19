@@ -53,6 +53,12 @@ class MainFrame(urwid.Frame):
 class NowPlayingPanel(ui_lists.TreeList):
 	def __init__(self, mpc):
 		super(NowPlayingPanel, self).__init__(ui_lists.NowPlayingWalker(mpc))
+		self.keyremap.update({
+		})
+		self.keymap.update({
+			'enter': self.body.play_current,
+			'd': self.body.delete_current,
+		})
 
 class LibraryPanel(urwid.Columns):
 	def __init__(self, mpc):

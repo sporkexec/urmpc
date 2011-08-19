@@ -250,3 +250,16 @@ class NowPlayingWalker(IOWalker):
 		item.set_wrap_mode('clip')
 		return self._attrmap(item), pos
 
+	def play_current(self):
+		item, pos = super(NowPlayingWalker, self)._get_at_pos(self.focus)
+		if item is None or pos is None:
+			return
+		self.mpc.playid(item['id'])
+
+	def delete_current(self):
+		item, pos = super(NowPlayingWalker, self)._get_at_pos(self.focus)
+		if item is None or pos is None:
+			return
+		self.mpc.deleteid(item['id'])
+		self._reload()
+
