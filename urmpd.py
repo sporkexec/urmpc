@@ -1,28 +1,46 @@
 import socket
 import mpd
+import urwid
 
-class MPDClient(object):
+# See http://www.musicpd.org/doc/protocol/ch03.html
+idle_events = (
+	'database', # the song database has been modified after update.
+	'playlist', # the current playlist has been modified
+	'player', # the player has been started, stopped or seeked
+	'mixer', # the volume has been changed
+	'output', # an audio output has been enabled or disabled
+	'options', # options like repeat, random, crossfade, replay gain
+	'sticker', # the sticker database has been modified.
+	'subscription', # a client has subscribed or unsubscribed to a channel
+	'message', # a message was received on a channel this client is subscribed
+	           # to; this event is only emitted when the queue is empty
+
+	'update', # a database update has started or finished. If the database was
+	          # modified during the update, the database event is also emitted.
+
+	'stored_playlist', # a stored playlist has been modified, renamed, created
+	                   # or deleted
+)
+
+class MPDClient(mpd.MPDClient):
+	"""Used just like the normal MPDClient. It takes care of reconnecting
+	to MPD when the connection drops out."""
+
+	# Holds server address
 	_host_port = None, None
-	_allow_idle = True
 	
-	def __init__(self, host, port):
-		self._mpc = mpd.MPDClient()
+	def connect(self, host, port):
+		"""See mpd.MPDClient.connect(). You only _need_ to call this once."""
 		self._host_port = host, port
 		self._connect()
 
-	def allow_idle(self, state=True):
-		self._allow_idle = state
-		if state is True:
-			self._idle()
-		else:
-			self._noidle()
-
 	def _connect(self):
-		self._mpc._reset()
-		self._mpc.connect(*self._host_port)
+		"""Forcefully kills the connection and opens it again."""
+		super(MPDClient, self)._reset()
+		super(MPDClient, self).connect(*self._host_port)
 
 	def _connect_wrap(self, func):
-		"""Wrap an MPDClient function to reconnect if it drops out.
+		"""Wraps an MPDClient function to reconnect if it drops out.
 		It should be used on nearly everything, there's no real overhead."""
 		def wrap(*args, **kwargs):
 			try:
@@ -30,45 +48,17 @@ class MPDClient(object):
 			except (socket.error, mpd.ConnectionError) as e:
 				try:
 					self._connect()
-					#TODO: Should we start idling after reconnecting?
 					return func(*args, **kwargs)
 				except (socket.error, mpd.ConnectionError) as e:
 					raise mpd.ConnectionError('Cannot establish connection')
 		return wrap
 
-	def _idle_wrap(self, func):
-		"""Wrap an MPDClient function to stop idling while it runs."""
-		def wrap(*args, **kwargs):
-			if self._allow_idle is False:
-				return func(*args, **kwargs)
-			else:
-				self._noidle()
-				ret = func(*args, **kwargs)
-				self._idle()
-				return ret
-		return wrap
-	def _idle(self):
-		if not self._mpc._pending:
-			self._connect_wrap(self._mpc.send_idle)()
-	def _noidle(self):
-		if not self._mpc._pending:
-			return
-		self._connect_wrap(self._mpc.send_noidle)()
-		try:
-			self._connect_wrap(self._mpc.fetch_idle)()
-		except mpd.PendingCommandError as e:
-			pass # Unnecessary but unharmful.
-
 	def __getattr__(self, attr):
-		attribute = self._mpc.__getattr__(attr)
+		"""Wraps any callable attribute with _connect_wrap."""
+		attribute = super(MPDClient, self).__getattr__(attr)
 		if not hasattr(attribute, '__call__'):
 			return attribute
-		function = self._connect_wrap(attribute)
-		if attr.find('idle') is -1:
-			if attr.startswith('send_') or attr.startswith('fetch_'):
-				raise AttributeError("'%s': Do not use pending commands" % attr)
-			function = self._idle_wrap(function)
-		return function
+		return self._connect_wrap(attribute)
 
 
 	## Utility functions from here on. Call them however you like.
@@ -144,4 +134,30 @@ class MPDClient(object):
 		else:
 			# Typical case
 			self.seek(song, target)
+urwid.register_signal(MPDClient, map(lambda e: 'idle_'+e, idle_events))
+
+class Idler(MPDClient):
+	"""Idles for MPD events and reports them."""
+	_mainmpc = None
+	_mainloop = None
+	def __init__(self, mainmpc, mainloop):
+		"""Steal credentials from main connection and starts idling."""
+		super(Idler, self).__init__()
+		self._mainmpc = mainmpc
+		self._mainloop = mainloop
+		self._host_port = self._mainmpc._host_port
+		self.send_idle()
+
+	def __call__(self):
+		"""Goes back to idling and emits the MPD events to the system."""
+		# Grab events and idle
+		events = self.fetch_idle()
+		self.send_idle()
+
+		# Emit events, force redraw if necessary
+		redraw = False
+		for event in events:
+			redraw |= urwid.emit_signal(self._mainmpc, 'idle_'+event)
+		if redraw:
+			self._mainloop.draw_screen()
 
