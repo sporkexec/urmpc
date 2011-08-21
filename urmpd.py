@@ -2,41 +2,76 @@ import socket
 import mpd
 
 class MPDClient(object):
-	"""Wraps mpd.MPDClient to handle connection stupidity.
-
-	You can use it exactly like mpd.MPDClient. It will attempt to reopen the
-	connection if it drops out, raising mpd.ConnectionError if it fails."""
-
-	_connect_config = ((), {}) # so __getattr__ can't infinitely recurse.
-
-	def __init__(self):
-		super(MPDClient, self).__init__()
+	_host_port = None, None
+	_allow_idle = True
+	
+	def __init__(self, host, port):
 		self._mpc = mpd.MPDClient()
+		self._host_port = host, port
+		self._connect()
 
-	def connect(self, *args, **kwargs):
-		"""Connect to the MPD server. Only call this once."""
-		self._connect_config = (args, kwargs)
-		self._mpc.connect(*args, **kwargs)
+	def allow_idle(self, state=True):
+		self._allow_idle = state
+		if state is True:
+			self._idle()
+		else:
+			self._noidle()
+
+	def _connect(self):
+		self._mpc._reset()
+		self._mpc.connect(*self._host_port)
+
+	def _connect_wrap(self, func):
+		"""Wrap an MPDClient function to reconnect if it drops out.
+		It should be used on nearly everything, there's no real overhead."""
+		def wrap(*args, **kwargs):
+			try:
+				return func(*args, **kwargs)
+			except (socket.error, mpd.ConnectionError) as e:
+				try:
+					self._connect()
+					#TODO: Should we start idling after reconnecting?
+					return func(*args, **kwargs)
+				except (socket.error, mpd.ConnectionError) as e:
+					raise mpd.ConnectionError('Cannot establish connection')
+		return wrap
+
+	def _idle_wrap(self, func):
+		"""Wrap an MPDClient function to stop idling while it runs."""
+		def wrap(*args, **kwargs):
+			if self._allow_idle is False:
+				return func(*args, **kwargs)
+			else:
+				self._noidle()
+				ret = func(*args, **kwargs)
+				self._idle()
+				return ret
+		return wrap
+	def _idle(self):
+		if not self._mpc._pending:
+			self._connect_wrap(self._mpc.send_idle)()
+	def _noidle(self):
+		if not self._mpc._pending:
+			return
+		self._connect_wrap(self._mpc.send_noidle)()
+		try:
+			self._connect_wrap(self._mpc.fetch_idle)()
+		except mpd.PendingCommandError as e:
+			pass # Unnecessary but unharmful.
 
 	def __getattr__(self, attr):
-		"""Tries to make sure a connection is established.
+		attribute = self._mpc.__getattr__(attr)
+		if not hasattr(attribute, '__call__'):
+			return attribute
+		function = self._connect_wrap(attribute)
+		if attr.find('idle') is -1:
+			if attr.startswith('send_') or attr.startswith('fetch_'):
+				raise AttributeError("'%s': Do not use pending commands" % attr)
+			function = self._idle_wrap(function)
+		return function
 
-		This may be trickier than it seems since python-mpd apparently has no
-		way to gracefully recover from a dropped connection. Thus we end up
-		constantly poking it in the spleen just to keep it alive."""
-		try:
-			self._mpc.ping()
-		except (AttributeError, socket.error, mpd.ConnectionError) as e:
-			self._mpc._sock = None # used by connect()
-			self._mpc._rfile = None # actually transfers data
-			args, kwargs = self._connect_config
-			try:
-				self._mpc.connect(*args, **kwargs)
-				self._mpc.ping()
-			except (AttributeError, TypeError, socket.error,
-					mpd.ConnectionError) as e:
-				raise mpd.ConnectionError('Cannot establish connection')
-		return self._mpc.__getattr__(attr)
+
+	## Utility functions from here on. Call them however you like.
 
 	def playpause(self):
 		if self.status()['state'] == 'play':
