@@ -2,6 +2,8 @@ import socket
 import mpd
 import urwid
 
+import signals
+
 # See http://www.musicpd.org/doc/protocol/ch03.html
 idle_events = (
 	'database', # the song database has been modified after update.
@@ -134,18 +136,15 @@ class MPDClient(mpd.MPDClient):
 		else:
 			# Typical case
 			self.seek(song, target)
-urwid.register_signal(MPDClient, map(lambda e: 'idle_'+e, idle_events))
 
 class Idler(MPDClient):
 	"""Idles for MPD events and reports them."""
-	_mainmpc = None
 	_mainloop = None
 	def __init__(self, mainmpc, mainloop):
 		"""Steal credentials from main connection and starts idling."""
 		super(Idler, self).__init__()
-		self._mainmpc = mainmpc
 		self._mainloop = mainloop
-		self._host_port = self._mainmpc._host_port
+		self._host_port = mainmpc._host_port
 		self.send_idle()
 
 	def __call__(self):
@@ -157,7 +156,7 @@ class Idler(MPDClient):
 		# Emit events, force redraw if necessary
 		redraw = False
 		for event in events:
-			redraw |= urwid.emit_signal(self._mainmpc, 'idle_'+event)
+			redraw |= signals.emit('idle_'+event)
 		if redraw:
 			self._mainloop.draw_screen()
 
