@@ -18,16 +18,13 @@ def _register(obj, signal):
 	if cls not in _dict:
 		_dict[cls] = (signal,)
 	elif signal not in _dict[cls]:
-		_dict[cls] += tuple(signal)
+		_dict[cls] += (signal,)
 
 def emit(signal, *args):
 	_register(_sender, signal)
 	return urwid.signals._signals.emit(_sender, signal, *args)
 
-def listen(signal, user_arg=None):
-	def wrap(callable_):
-		_register(_sender, signal)
-		urwid.connect_signal(_sender, signal, callable_, user_arg)
-		return callable_
-	return wrap
+def listen(signal, callback, user_arg=None):
+	_register(_sender, signal)
+	urwid.connect_signal(_sender, signal, callback, user_arg)
 

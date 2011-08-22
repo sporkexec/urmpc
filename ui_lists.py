@@ -1,5 +1,7 @@
 import urwid
 
+import signals
+
 def sends_signal(*signals):
 	def classmaker(cls):
 		urwid.register_signal(cls, signals)
@@ -40,6 +42,7 @@ class IOWalker(urwid.ListWalker):
 		except ValueError as e:
 			self.focus = 0
 		self._modified()
+		return True
 	def _get_items(self):
 		pass
 	def _attrmap(self, w):
@@ -50,6 +53,7 @@ class ArtistWalker(IOWalker):
 	def __init__(self, mpc):
 		self.mpc = mpc
 		super(ArtistWalker, self).__init__()
+		signals.listen('idle_database', self._reload)
 	def set_focus(self, focus):
 		super(ArtistWalker, self).set_focus(focus)
 		urwid.emit_signal(self, 'change', self.items[focus])
@@ -227,11 +231,11 @@ class PlayableList(TreeList):
 			' ': self.body.queue_current,
 		})
 
-#TODO: Make this watch playlist with mpc.idle('playlist')?
 class NowPlayingWalker(IOWalker):
 	def __init__(self, mpc):
 		self.mpc = mpc
 		super(NowPlayingWalker, self).__init__()
+		signals.listen('idle_playlist', self._reload)
 	def set_focus(self, focus):
 		super(NowPlayingWalker, self).set_focus(focus)
 		urwid.emit_signal(self, 'change', self.items[focus])
@@ -261,5 +265,4 @@ class NowPlayingWalker(IOWalker):
 		if item is None or pos is None:
 			return
 		self.mpc.deleteid(item['id'])
-		self._reload()
 

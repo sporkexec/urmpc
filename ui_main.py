@@ -1,4 +1,5 @@
 import urwid
+
 import ui_lists
 
 class MainFrame(urwid.Frame):
