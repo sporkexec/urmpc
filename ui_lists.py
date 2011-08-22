@@ -1,4 +1,5 @@
 import urwid
+import mpd
 
 import signals
 
@@ -14,39 +15,59 @@ class IOWalker(urwid.ListWalker):
 		self.focus = 0
 		self.items = []
 		self._reload()
+
 	def get_focus(self):
 		return self._get_at_pos(self.focus)
 	def set_focus(self, focus):
 		self.focus = focus
 		self._modified()
+
 	def get_next(self, pos):
 		return self._get_at_pos(pos + 1)
 	def get_prev(self, pos):
 		return self._get_at_pos(pos - 1)
-	def _get_at_pos(self, pos):
+
+	def _get_raw(self, pos):
 		if pos < 0:
-			return None, None
+			return None
 		try:
-			ret = self.items[pos]
+			return self.items[pos]
 		except IndexError as e:
+			return None
+		
+	def _get_at_pos(self, pos):
+		item = self._get_raw(pos)
+		if item is None:
 			return None, None
-		return ret, pos
+		return self._format(item), pos
+
 	def _reload(self):
 		"""Grab items from datastore and apply any changes, attempting to
-		preserve focus on current item if possible."""
-		item, focus = self.get_focus(), self.focus
+		preserve focus as intelligently as possible."""
+		focus = self.focus
+		item = self._get_raw(focus)
 		self.items[:] = self._get_items()
+		count = len(self.items)
 		try:
-			if focus >= len(self.items) or item != self.items[focus]:
+			if focus >= count or item != self.items[focus]:
 				self.focus = self.items.index(item)
 		except ValueError as e:
-			self.focus = 0
+			if focus < count:
+				self.focus = focus
+			elif count > 0:
+				self.focus = count - 1
+			else:
+				self.focus = 0
 		self._modified()
 		return True
+
+	# Override these.
 	def _get_items(self):
-		pass
-	def _attrmap(self, w):
-		return w
+		"""Returns a fresh copy of the items from the datastore."""
+		return []
+	def _format(self, item):
+		"""Returns a widget suitable for display."""
+		return item
 
 @sends_signal('change')
 class ArtistWalker(IOWalker):
@@ -54,30 +75,28 @@ class ArtistWalker(IOWalker):
 		self.mpc = mpc
 		super(ArtistWalker, self).__init__()
 		signals.listen('idle_database', self._reload)
-	def set_focus(self, focus):
-		super(ArtistWalker, self).set_focus(focus)
-		urwid.emit_signal(self, 'change', self.items[focus])
+
 	def _get_items(self):
 		return sorted(self.mpc.list('artist'))
-	def _attrmap(self, w):
-		return urwid.AttrMap(w, 'ArtistWalker_main', 'ArtistWalker_focus')
-	def _get_at_pos(self, pos):
-		item, pos = super(ArtistWalker, self)._get_at_pos(pos)
-		if item is None or pos is None:
-			return item, pos
+
+	def _format(self, item):
 		if item == '':
 			item = '[None]'
 		item = urwid.Text(item)
 		item.set_wrap_mode('clip')
-		return self._attrmap(item), pos
+		return item
+
+	def set_focus(self, focus):
+		super(ArtistWalker, self).set_focus(focus)
+		urwid.emit_signal(self, 'change', self.items[focus])
 
 	def play_current(self):
 		song_id = self.queue_current()
 		if song_id is not None:
 			self.mpc.playid(song_id)
 	def queue_current(self):
-		item, pos = super(ArtistWalker, self)._get_at_pos(self.focus)
-		if item is None or pos is None:
+		item = super(ArtistWalker, self)._get_raw(self.focus)
+		if item is None:
 			return None
 		song_id = None
 		for song in self.mpc.find('artist', item):
@@ -92,34 +111,33 @@ class AlbumWalker(IOWalker):
 		self.mpc = mpc
 		self.artist = artist
 		super(AlbumWalker, self).__init__()
-	def set_focus(self, focus):
-		super(AlbumWalker, self).set_focus(focus)
-		urwid.emit_signal(self, 'change', (self.artist, self.items[focus]))
+
 	def _get_items(self):
 		return sorted(self.mpc.list('album', 'artist', self.artist))
-	def _attrmap(self, w):
-		return urwid.AttrMap(w, 'AlbumWalker_main', 'AlbumWalker_focus')
-	def change_artist(self, value):
-		self.artist = value
-		self._reload()
-		self.set_focus(self.focus)
-	def _get_at_pos(self, pos):
-		item, pos = super(AlbumWalker, self)._get_at_pos(pos)
-		if item is None or pos is None:
-			return item, pos
+
+	def _format(self, item):
 		if item == '':
 			item = '[None]'
 		item = urwid.Text(item)
 		item.set_wrap_mode('clip')
-		return self._attrmap(item), pos
+		return item
+
+	def set_focus(self, focus):
+		super(AlbumWalker, self).set_focus(focus)
+		urwid.emit_signal(self, 'change', (self.artist, self.items[focus]))
+
+	def change_artist(self, value):
+		self.artist = value
+		self._reload()
+		self.set_focus(self.focus)
 
 	def play_current(self):
 		song_id = self.queue_current()
 		if song_id is not None:
 			self.mpc.playid(song_id)
 	def queue_current(self):
-		item, pos = super(AlbumWalker, self)._get_at_pos(self.focus)
-		if item is None or pos is None:
+		item = super(AlbumWalker, self)._get_raw(self.focus)
+		if item is None:
 			return None
 		song_id = None
 		for song in self.mpc.find('artist', self.artist, 'album', item):
@@ -135,19 +153,12 @@ class TrackWalker(IOWalker):
 		self.artist = artist
 		self.album = album
 		super(TrackWalker, self).__init__()
+
 	def _get_items(self):
 		#TODO: Make sure this sorts like it should.
 		return self.mpc.find('artist', self.artist, 'album', self.album)
-	def _attrmap(self, w):
-		return urwid.AttrMap(w, 'TrackWalker_main', 'TrackWalker_focus')
-	def change_album(self, artist_album):
-		self.artist, self.album = artist_album
-		self._reload()
 
-	def _get_at_pos(self, pos):
-		item, pos = super(TrackWalker, self)._get_at_pos(pos)
-		if item is None or pos is None:
-			return item, pos
+	def _format(self, item):
 		try:
 			text = item['title']
 		except KeyError as e:
@@ -156,15 +167,19 @@ class TrackWalker(IOWalker):
 			text = '[None]'
 		text = urwid.Text(text)
 		text.set_wrap_mode('clip')
-		return self._attrmap(text), pos
+		return text
+
+	def change_album(self, artist_album):
+		self.artist, self.album = artist_album
+		self._reload()
 
 	def play_current(self):
 		song_id = self.queue_current()
 		if song_id is not None:
 			self.mpc.playid(song_id)
 	def queue_current(self):
-		item, pos = super(TrackWalker, self)._get_at_pos(self.focus)
-		if item is None or pos is None:
+		item = super(TrackWalker, self)._get_raw(self.focus)
+		if item is None:
 			return None
 		song_id = None
 		for song in self.mpc.find('file', item['file']):
@@ -236,33 +251,33 @@ class NowPlayingWalker(IOWalker):
 		self.mpc = mpc
 		super(NowPlayingWalker, self).__init__()
 		signals.listen('idle_playlist', self._reload)
-	def set_focus(self, focus):
-		super(NowPlayingWalker, self).set_focus(focus)
-		urwid.emit_signal(self, 'change', self.items[focus])
+
 	def _get_items(self):
 		return self.mpc.playlistinfo()
-	def _attrmap(self, w):
-		return urwid.AttrMap(w, 'NowPlayingWalker_main', 'NowPlayingWalker_focus')
-	def _get_at_pos(self, pos):
-		item, pos = super(NowPlayingWalker, self)._get_at_pos(pos)
-		if item is None or pos is None:
-			return item, pos
 
+	def _format(self, item):
 		text = "Artist: %s, Album: %s, Title: %s, Length: %s" % (item['artist'], item['album'], item['title'], item['time'])
 
 		item = urwid.Text(text)
 		item.set_wrap_mode('clip')
-		return self._attrmap(item), pos
+		return urwid.AttrWrap(item, 'NowPlayingWalker_main', 'NowPlayingWalker_focus')
+
+	def set_focus(self, focus):
+		super(NowPlayingWalker, self).set_focus(focus)
+		urwid.emit_signal(self, 'change', self.items[focus])
 
 	def play_current(self):
-		item, pos = super(NowPlayingWalker, self)._get_at_pos(self.focus)
-		if item is None or pos is None:
+		item = super(NowPlayingWalker, self)._get_raw(self.focus)
+		if item is None:
 			return
 		self.mpc.playid(item['id'])
 
 	def delete_current(self):
-		item, pos = super(NowPlayingWalker, self)._get_at_pos(self.focus)
-		if item is None or pos is None:
+		item = super(NowPlayingWalker, self)._get_raw(self.focus)
+		if item is None:
 			return
-		self.mpc.deleteid(item['id'])
+		try:
+			self.mpc.deleteid(item['id'])
+		except mpd.CommandError as e:
+			self._reload()
 
