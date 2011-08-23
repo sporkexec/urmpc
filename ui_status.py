@@ -20,6 +20,7 @@ class MainFooter(object):
 		self._progress_bar = urwid.ProgressBar(None, None)
 		signals.listen('user_notification', self.notify)
 		signals.listen('idle_update', self._notify_update)
+		signals.listen('idle_playlist', self._playlist_update)
 		self._change_current()
 
 	def _change_current(self, name=None):
@@ -63,4 +64,8 @@ class MainFooter(object):
 		if 'updating_db' not in self.mpc.status():
 			signals.emit('user_notification', 'Database update finished!')
 		# else: update ongoing, ignore
+
+	def _playlist_update(self):
+		if int(self.mpc.status()['playlistlength']) == 0:
+			signals.emit('user_notification', 'Cleared playlist!')
 

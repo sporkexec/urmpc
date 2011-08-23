@@ -103,6 +103,7 @@ class ArtistWalker(IOWalker):
 			sid = self.mpc.addid(song['file'])
 			if song_id is None:
 				song_id = sid
+		signals.emit('user_notification', 'Adding artist "%s"' % item)
 		return song_id
 
 @sends_signal('change')
@@ -144,6 +145,7 @@ class AlbumWalker(IOWalker):
 			sid = self.mpc.addid(song['file'])
 			if song_id is None:
 				song_id = sid
+		signals.emit('user_notification', 'Adding album "%s" - %s' % (item, self.artist))
 		return song_id
 
 
@@ -181,11 +183,23 @@ class TrackWalker(IOWalker):
 		item = super(TrackWalker, self)._get_raw(self.focus)
 		if item is None:
 			return None
-		song_id = None
-		for song in self.mpc.find('file', item['file']):
-			sid = self.mpc.addid(song['file'])
-			if song_id is None:
-				song_id = sid
+		song = self.mpc.find('file', item['file'])
+		if song == []:
+			return None
+		song = song[0]
+		song_id = self.mpc.addid(song['file'])
+
+		#TODO: Do this like self._format, this is ugly.
+		try:
+			name = item['title']
+		except KeyError as e:
+			name = item['file']
+		try:
+			artist = item['artist']
+		except KeyError as e:
+			artist = '[None]'
+		
+		signals.emit('user_notification', 'Adding "%s" by %s' % (name, artist))
 		return song_id
 
 class TreeList(urwid.ListBox):
