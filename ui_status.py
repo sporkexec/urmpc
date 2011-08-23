@@ -1,13 +1,120 @@
+from datetime import timedelta
 import urwid
 
 import signals
+
+# File "/usr/lib/python2.7/site-packages/urwid/util.py", line 431, in __init__
+#	raise AttributeError, "Class has same name as one of its super classes"
+# lol wut's a namespace, guys? PROTIP: metaclasses are usually overengineering.
+# And so we can't just name it ProgressBar...
+class ProgressBar_(urwid.ProgressBar):
+	"""Because urwid.ProgressBar can't do anything but "%s %" centered.
+	If you're watching, Ian, this is one of the little things on my wishlist."""
+	def render(self, size, focus=False):
+		"""
+		Render the progress bar.
+		"""
+		(maxcol,) = size
+
+		txt = self.get_text()
+		c = txt.render((maxcol,))
+
+		cf = float( self.current ) * maxcol / self.done
+		ccol = int( cf )
+		cs = 0
+		if self.satt is not None:
+			cs = int((cf - ccol) * 8)
+		if ccol < 0 or (ccol == 0 and cs == 0):
+			c._attr = [[(self.normal,maxcol)]]
+		elif ccol >= maxcol:
+			c._attr = [[(self.complete,maxcol)]]
+		elif cs and c._text[0][ccol] == " ":
+			t = c._text[0]
+			cenc = self.eighths[cs].encode("utf-8")
+			c._text[0] = t[:ccol]+cenc+t[ccol+1:]
+			a = []
+			if ccol > 0:
+				a.append( (self.complete, ccol) )
+			a.append((self.satt,len(cenc)))
+			if maxcol-ccol-1 > 0:
+				a.append( (self.normal, maxcol-ccol-1) )
+			c._attr = [a]
+			c._cs = [[(None, len(c._text[0]))]]
+		else:
+			c._attr = [[(self.complete,ccol),
+				(self.normal,maxcol-ccol)]]
+		return c
+
+	def set_finished(self, done):
+		"""
+		done -- progress amount at 100%
+		"""
+		self.done = done
+		self._invalidate()
+
+	def get_text(self):
+		percent = int( self.current*100/self.done )
+		if percent < 0: percent = 0
+		if percent > 100: percent = 100
+		return Text( str(percent)+" %", 'center', 'clip' )
+
+class CurrentSongProgress(ProgressBar_):
+	def __init__(self, mpc, *args, **kwargs):
+		super(CurrentSongProgress, self).__init__(*args, **kwargs)
+		self.mpc = mpc
+		signals.listen('idle_player', self._player_update)
+		self._player_update()
+
+	def get_text(self):
+		if self._stopped is True:
+			return urwid.Text('')
+
+		done = str(timedelta(seconds=self.done)).lstrip(':0')
+		current = str(timedelta(seconds=self.current))[-len(done):]
+
+		#TODO: config align, format
+		text = urwid.Text("%s/%s" % (current, done), 'right', 'clip')
+		return text
+
+	_progress_alarm = None
+	_stopped = False
+	def _player_update(self):
+		"""Indicates that new song, pause, etc. more important than seconds++
+		has happened."""
+		status = self.mpc.status()
+		if status['state'] == 'stop':
+			self._stopped = True
+			self.set_completion(0)
+			self.set_finished(100) # Can't be 0, ZeroDivisionError in urwid.
+			return True
+		self._stopped = False
+
+		# Something changed, better recalculate.
+		assert 'time' in status # If we're not stopped, we must be on a track
+		current, done = map(int, status['time'].split(':'))
+		self.set_completion(current)
+		self.set_finished(done)
+
+		signals.redraw()
+
+		if self._progress_alarm is not None:
+			signals.alarm_remove(self._progress_alarm)
+			self._progress_alarm = None
+			
+		if status['state'] == 'play':
+			self._progress_alarm = signals.alarm_in(1.0, self._progress_increment)
+
+	def _progress_increment(self, *_):
+		#TODO?: Try to sync this to actual time more accurately?
+		self._progress_alarm = signals.alarm_in(1.0, self._progress_increment)
+		self.set_completion(self.current+1)
+		signals.redraw()
 
 class MainFooter(object):
 	mpc = None
 	_notification = None, None
 	_notification_alarm = None
 
-	#FIXME: DRY?
 	# Valid widgets we can be rendering
 	_components = '_progress_bar', '_notification_bar'
 	_progress_bar, _notification_bar = None, None
@@ -17,7 +124,8 @@ class MainFooter(object):
 		super(MainFooter, self).__init__()
 		self.mpc = mpc
 		self._notification_bar = urwid.Text('')
-		self._progress_bar = urwid.ProgressBar(None, None)
+		self._progress_bar = CurrentSongProgress(mpc, 'SongRemainingBar',
+		                                         'SongElapsedBar')
 		signals.listen('user_notification', self.notify)
 		signals.listen('idle_update', self._notify_update)
 		signals.listen('idle_playlist', self._playlist_update)

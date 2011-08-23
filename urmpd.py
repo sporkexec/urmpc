@@ -130,13 +130,13 @@ class MPDClient(mpd.MPDClient):
 		if target > total:
 			target -= total
 			self.next()
-			self.seek(target, True, False)
+			self.urseek(target, True, False)
 		elif target < 0:
 			if song == 0:
 				return # No previous song
 			self.previous()
 			now, total = map(int, self.status()['time'].split(':'))
-			self.seek(total+target, False, False)
+			self.urseek(total+target, False, False)
 		else:
 			# Typical case
 			self.seek(song, target)

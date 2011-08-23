@@ -31,14 +31,26 @@ def listen(signal, callback, user_arg=None):
 
 # Provide access to alarms globally.
 def alarm_at(unixtime, callback, user_data=None):
-	return _mainloop.set_alarm_at(unixtime, callback, user_data)
+	try:
+		return _mainloop.set_alarm_at(unixtime, callback, user_data)
+	except AttributeError as e:
+		pass # Not fully initialized, no big deal. Might want it on debug log.
 
 def alarm_in(interval, callback, user_data=None):
-	return _mainloop.set_alarm_in(interval, callback, user_data)
+	try:
+		return _mainloop.set_alarm_in(interval, callback, user_data)
+	except AttributeError as e:
+		pass # Not fully initialized, no big deal. Might want it on debug log.
 
 def alarm_remove(handle):
-	return _mainloop.remove_alarm(handle)
+	try:
+		return _mainloop.remove_alarm(handle)
+	except AttributeError as e:
+		pass # Not fully initialized, no big deal. Might want it on debug log.
 
 def redraw():
-	return _mainloop.draw_screen()
+	try:
+		return _mainloop.draw_screen()
+	except AttributeError as e:
+		pass # Not fully initialized, no big deal. Might want it on debug log.
 
