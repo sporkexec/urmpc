@@ -65,6 +65,10 @@ class MPDClient(mpd.MPDClient):
 
 	## Utility functions from here on. Call them however you like.
 
+	def update(self):
+		super(MPDClient, self).__getattr__('update')()
+		signals.emit('user_notification', 'Database update started!')
+
 	def playpause(self):
 		if self.status()['state'] == 'play':
 			self.pause()

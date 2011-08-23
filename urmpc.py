@@ -1,7 +1,8 @@
 #!/usr/bin/env python2
-
 import urwid
+
 import urmpd
+import signals
 from ui_main import MainFrame
 
 palette = [
@@ -29,5 +30,6 @@ loop = urwid.MainLoop(frame, palette, event_loop=event_loop)
 idler = urmpd.Idler(mpc, loop)
 event_loop.watch_file(idler, idler)
 
+signals._mainloop = loop
 loop.run()
 

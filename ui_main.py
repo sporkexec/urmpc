@@ -1,6 +1,7 @@
 import urwid
 
 import ui_lists
+import ui_status
 
 class MainFrame(urwid.Frame):
 	def __init__(self, mpc):
@@ -33,8 +34,9 @@ class MainFrame(urwid.Frame):
 
 		self.librarypanel = LibraryPanel(mpc)
 		self.nowplayingpanel = NowPlayingPanel(mpc)
+		self.footer = ui_status.MainFooter(mpc)
 
-		super(MainFrame, self).__init__(self.librarypanel)
+		super(MainFrame, self).__init__(self.librarypanel, footer = self.footer)
 
 	def keypress(self, size, key):
 		if key in self.keymap:
@@ -47,6 +49,7 @@ class MainFrame(urwid.Frame):
 			self.set_body(self.nowplayingpanel)
 		elif self.get_body() is self.nowplayingpanel:
 			self.set_body(self.librarypanel)
+		#FIXME: Footer statuses not acknowledged in nowplayingpanel?
 
 	def quit(self):
 		raise urwid.ExitMainLoop()
