@@ -62,6 +62,12 @@ class NowPlayingPanel(ui_lists.TreeList):
 		self.keymap.update({
 			'enter': self.body.play_current,
 			'd': self.body.delete_current,
+			'delete': self.body.delete_current,
+			'J': self.body.swap_down,
+			'K': self.body.swap_up,
+			'n': self.body.swap_down,
+			'm': self.body.swap_up,
+			'o': self.body.focus_playing,
 		})
 
 class LibraryPanel(urwid.Columns):
