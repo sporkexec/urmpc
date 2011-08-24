@@ -280,19 +280,18 @@ class NowPlayingWalker(IOWalker):
 		return self.mpc.playlistinfo()
 
 	def _format(self, item):
-		#FIXME: _Surely_ I'm missing something important here...
-
-		time = str(datetime.timedelta(seconds=int(item['time'])))[-5:].replace('0', ' ', 1)
-		time = urwid.Text(('time', time), wrap='clip', align='left')
+		time = str(datetime.timedelta(seconds=int(item['time'])))[-5:]
+		if time[0] == '0': time = time.replace('0', ' ', 1)
+		time = urwid.AttrMap(urwid.Text(time, wrap='clip', align='left'), 'time')
 		time = ('fixed', 6, time)
 
-		artist = urwid.Text(('artist', item['artist']), wrap='clip')
+		artist = urwid.AttrMap(urwid.Text(item['artist'], wrap='clip'), 'artist')
 		artist = ('weight', 1.0, artist)
 
-		title = urwid.Text(('title', item['title']), wrap='clip')
+		title = urwid.AttrMap(urwid.Text(item['title'], wrap='clip'), 'title')
 		title = ('weight', 1.5, title)
 
-		album = urwid.Text(('album', item['album']), wrap='clip', align='right')
+		album = urwid.AttrMap(urwid.Text(item['album'], wrap='clip', align='right'), 'album')
 		album = ('weight', 1.0, album)
 
 		item = urwid.Columns((time, artist, title, album))
