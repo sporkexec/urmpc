@@ -86,6 +86,9 @@ class CurrentSongProgress(ProgressBar_):
 			self._stopped = True
 			self.set_completion(0)
 			self.set_finished(100) # Can't be 0, ZeroDivisionError in urwid.
+			if self._progress_alarm is not None:
+				signals.alarm_remove(self._progress_alarm)
+				self._progress_alarm = None
 			return True
 		self._stopped = False
 
