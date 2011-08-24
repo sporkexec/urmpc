@@ -124,8 +124,9 @@ class MainFooter(object):
 		super(MainFooter, self).__init__()
 		self.mpc = mpc
 		self._notification_bar = urwid.Text('')
-		self._progress_bar = CurrentSongProgress(mpc, 'SongRemainingBar',
-		                                         'SongElapsedBar')
+		self._progress_bar = CurrentSongProgress(mpc,
+		                                         'footer.progress',
+		                                         'footer.progress.elapsed')
 		signals.listen('user_notification', self.notify)
 		signals.listen('idle_update', self._notify_update)
 		signals.listen('idle_playlist', self._playlist_update)

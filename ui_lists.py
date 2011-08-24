@@ -1,3 +1,4 @@
+import datetime
 import urwid
 import mpd
 
@@ -84,6 +85,9 @@ class ArtistWalker(IOWalker):
 			item = '[None]'
 		item = urwid.Text(item)
 		item.set_wrap_mode('clip')
+		item = urwid.AttrMap(item,
+		                     {None: 'library.column'},
+		                     {None: 'library.column.focus'})
 		return item
 
 	def set_focus(self, focus):
@@ -121,6 +125,9 @@ class AlbumWalker(IOWalker):
 			item = '[None]'
 		item = urwid.Text(item)
 		item.set_wrap_mode('clip')
+		item = urwid.AttrMap(item,
+		                     {None: 'library.column'},
+		                     {None: 'library.column.focus'})
 		return item
 
 	def set_focus(self, focus):
@@ -169,6 +176,9 @@ class TrackWalker(IOWalker):
 			text = '[None]'
 		text = urwid.Text(text)
 		text.set_wrap_mode('clip')
+		text = urwid.AttrMap(text,
+		                     {None: 'library.column'},
+		                     {None: 'library.column.focus'})
 		return text
 
 	def change_album(self, artist_album):
@@ -270,11 +280,38 @@ class NowPlayingWalker(IOWalker):
 		return self.mpc.playlistinfo()
 
 	def _format(self, item):
-		text = "Artist: %s, Album: %s, Title: %s, Length: %s" % (item['artist'], item['album'], item['title'], item['time'])
+		#FIXME: _Surely_ I'm missing something important here...
 
-		item = urwid.Text(text)
-		item.set_wrap_mode('clip')
-		return urwid.AttrWrap(item, 'NowPlayingWalker_main', 'NowPlayingWalker_focus')
+		time = str(datetime.timedelta(seconds=int(item['time'])))[-5:].replace('0', ' ', 1)
+		time = urwid.Text(('time', time), wrap='clip', align='left')
+		time = ('fixed', 6, time)
+
+		artist = urwid.Text(('artist', item['artist']), wrap='clip')
+		artist = ('weight', 1.0, artist)
+
+		title = urwid.Text(('title', item['title']), wrap='clip')
+		title = ('weight', 1.5, title)
+
+		album = urwid.Text(('album', item['album']), wrap='clip', align='right')
+		album = ('weight', 1.0, album)
+
+		item = urwid.Columns((time, artist, title, album))
+
+		return urwid.AttrMap(
+			item,
+			{
+				'time': 'playlist.time',
+				'artist': 'playlist.artist',
+				'title': 'playlist.title',
+				'album': 'playlist.album',
+			},
+			{
+				'time': 'playlist.time.focus',
+				'artist': 'playlist.artist.focus',
+				'title': 'playlist.title.focus',
+				'album': 'playlist.album.focus',
+			},
+		)
 
 	def set_focus(self, focus):
 		super(NowPlayingWalker, self).set_focus(focus)

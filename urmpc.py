@@ -6,16 +6,20 @@ import signals
 from ui_main import MainFrame
 
 palette = [
-	('ArtistWalker_main', 'white', 'black'),
-	('ArtistWalker_focus', 'light cyan', 'black'),
-	('AlbumWalker_main', 'white', 'black'),
-	('AlbumWalker_focus', 'light cyan', 'black'),
-	('TrackWalker_main', 'white', 'black'),
-	('TrackWalker_focus', 'light cyan', 'black'),
-	('NowPlayingWalker_main', 'white', 'black'),
-	('NowPlayingWalker_focus', 'light cyan', 'black'),
-	('SongElapsedBar', 'white', 'dark green'),
-	('SongRemainingBar', 'white', 'black'),
+	('library.column', 'default', 'black'),
+	('library.column.focus', 'dark cyan,standout', 'black'),
+
+	('playlist.time', 'dark cyan', 'default'),
+	('playlist.artist', 'dark magenta', 'default'),
+	('playlist.title', 'dark green', 'default'),
+	('playlist.album', 'dark red', 'default'),
+	('playlist.time.focus', 'dark cyan,standout', 'default'),
+	('playlist.artist.focus', 'dark magenta,standout', 'default'),
+	('playlist.title.focus', 'dark green,standout', 'default'),
+	('playlist.album.focus', 'dark red,standout', 'default'),
+
+	('footer.progress', 'white', 'black'),
+	('footer.progress.elapsed', 'white', 'dark green'),
 ]
 
 mpc = urmpd.MPDClient()
