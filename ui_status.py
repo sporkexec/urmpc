@@ -25,13 +25,10 @@ class ProgressBar_(urwid.ProgressBar):
 		if self.satt is not None:
 			cs = int((cf - ccol) * 8)
 		if ccol < 0 or (ccol == 0 and cs == 0):
-			# 0% or less
 			c._attr = [[(self.normal,maxcol)]]
 		elif ccol >= maxcol:
-			# 100% or more
 			c._attr = [[(self.complete,maxcol)]]
 		elif cs and c._text[0][ccol] == " ":
-			# Partial column to render, self.get_text() not blocking it
 			t = c._text[0]
 			cenc = self.eighths[cs].encode("utf-8")
 			c._text[0] = t[:ccol]+cenc+t[ccol+1:]
@@ -44,7 +41,6 @@ class ProgressBar_(urwid.ProgressBar):
 			c._attr = [a]
 			c._cs = [[(None, len(c._text[0]))]]
 		else:
-			# Non-partial render somewhere in the middle
 			c._attr = [[(self.complete,ccol),
 				(self.normal,maxcol-ccol)]]
 		return c
@@ -71,13 +67,16 @@ class CurrentSongProgress(ProgressBar_):
 
 	def get_text(self):
 		if self._stopped is True:
-			return urwid.Text('')
+			return urwid.Text('[Stopped]', 'right', 'clip')
 
 		done = str(timedelta(seconds=self.done)).lstrip(':0')
 		current = str(timedelta(seconds=self.current))[-len(done):]
 
 		#TODO: config align, format
-		text = urwid.Text("%s/%s" % (current, done), 'right', 'clip')
+		text = "%s/%s"
+		if self.mpc.status()['state'] == 'pause':
+			text = '[Paused] ' + text
+		text = urwid.Text(text % (current, done), 'right', 'clip')
 		return text
 
 	_progress_alarm = None
