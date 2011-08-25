@@ -20,6 +20,7 @@ palette = [
 
 	('footer.progress', 'white', 'black'),
 	('footer.progress.elapsed', 'white', 'dark green'),
+	('footer.progress.smoothed', 'dark green', 'black'),
 ]
 
 mpc = urmpd.MPDClient()
