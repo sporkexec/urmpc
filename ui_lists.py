@@ -284,6 +284,10 @@ class NowPlayingWalker(IOWalker):
 		return self.mpc.playlistinfo()
 
 	def _format(self, item):
+		if 'artist' not in item: item['artist'] = '[None]'
+		if 'album' not in item: item['album'] = '[None]'
+		if 'title' not in item: item['title'] = '[None]'
+
 		time = str(util.timedelta(seconds=int(item['time'])))
 		time = urwid.AttrMap(urwid.Text(time, wrap='clip', align='left'), 'time')
 		time = ('fixed', 6, time)
