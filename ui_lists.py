@@ -1,15 +1,8 @@
-import datetime
 import urwid
 import mpd
 
 import signals
-
-def sends_signal(*signals):
-	def classmaker(cls):
-		urwid.register_signal(cls, signals)
-		return cls
-	return classmaker
-
+import util
 
 class IOWalker(urwid.ListWalker):
 	def __init__(self):
@@ -70,7 +63,7 @@ class IOWalker(urwid.ListWalker):
 		"""Returns a widget suitable for display."""
 		return item
 
-@sends_signal('change')
+@signals.sends_signal('change')
 class ArtistWalker(IOWalker):
 	def __init__(self, mpc):
 		self.mpc = mpc
@@ -110,7 +103,7 @@ class ArtistWalker(IOWalker):
 		signals.emit('user_notification', 'Adding artist "%s"' % item)
 		return song_id
 
-@sends_signal('change')
+@signals.sends_signal('change')
 class AlbumWalker(IOWalker):
 	def __init__(self, mpc, artist):
 		self.mpc = mpc
@@ -280,8 +273,7 @@ class NowPlayingWalker(IOWalker):
 		return self.mpc.playlistinfo()
 
 	def _format(self, item):
-		time = str(datetime.timedelta(seconds=int(item['time'])))[-5:]
-		if time[0] == '0': time = time.replace('0', ' ', 1)
+		time = str(util.timedelta(seconds=int(item['time'])))
 		time = urwid.AttrMap(urwid.Text(time, wrap='clip', align='left'), 'time')
 		time = ('fixed', 6, time)
 

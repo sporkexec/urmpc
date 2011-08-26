@@ -1,7 +1,7 @@
-from datetime import timedelta
 import urwid
 
 import signals
+import util
 
 # File "/usr/lib/python2.7/site-packages/urwid/util.py", line 431, in __init__
 #	raise AttributeError, "Class has same name as one of its super classes"
@@ -69,8 +69,8 @@ class CurrentSongProgress(ProgressBar_):
 		if self._stopped is True:
 			return urwid.Text('[Stopped]', 'right', 'clip')
 
-		done = str(timedelta(seconds=self.done)).lstrip(':0')
-		current = str(timedelta(seconds=self.current))[-len(done):]
+		done = str(util.timedelta(seconds=self.done))
+		current = str(util.timedelta(seconds=self.current))
 
 		#TODO: config align, format
 		text = "%s/%s"

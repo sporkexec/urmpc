@@ -29,6 +29,12 @@ def listen(signal, callback, user_arg=None):
 	_register(_sender, signal)
 	urwid.connect_signal(_sender, signal, callback, user_arg)
 
+def sends_signal(*signals):
+	def classmaker(cls):
+		urwid.register_signal(cls, signals)
+		return cls
+	return classmaker
+
 # Provide access to alarms globally.
 def alarm_at(unixtime, callback, user_data=None):
 	try:
