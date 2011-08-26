@@ -67,11 +67,22 @@ class IOWalker(urwid.ListWalker):
 class ArtistWalker(IOWalker):
 	def __init__(self, mpc):
 		self.mpc = mpc
+		ignore_leading_the = True
+		if ignore_leading_the:
+			def sort(artist):
+				artist = artist.lower()
+				if artist.startswith('the '):
+					return artist[4:]
+				return artist
+			self._sort = sort
+		else:
+			self._sort = lambda artist: artist.lower()
 		super(ArtistWalker, self).__init__()
 		signals.listen('idle_database', self._reload)
 
 	def _get_items(self):
-		return sorted(self.mpc.list('artist'))
+		return sorted(self.mpc.list('artist'), key=self._sort)
+		
 
 	def _format(self, item):
 		if item == '':
