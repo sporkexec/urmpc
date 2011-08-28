@@ -190,6 +190,7 @@ class CurrentSong(urwid.Text):
 		self.mpc = mpc
 		super(CurrentSong, self).__init__('')
 		signals.listen('idle_player', self._player_update)
+		self._player_update()
 
 	def _player_update(self):
 		if self.mpc.status()['state'] == 'stop':

@@ -82,7 +82,6 @@ class ArtistWalker(IOWalker):
 
 	def _get_items(self):
 		return sorted(self.mpc.list('artist'), key=self._sort)
-		
 
 	def _format(self, item):
 		if item == '':
