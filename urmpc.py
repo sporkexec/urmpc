@@ -11,6 +11,7 @@ palette = [
 
 	('library.column', 'default', 'black'),
 	('library.column.focus', 'dark cyan,standout', 'black'),
+	('library.divider', 'dark gray', 'default'),
 
 	('playlist.time', 'dark cyan', 'default'),
 	('playlist.artist', 'dark magenta', 'default'),

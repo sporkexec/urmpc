@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 import urwid
 
 import ui_lists
 import ui_status
+import util
 
 class MainFrame(urwid.Frame):
 	def __init__(self, mpc):
@@ -93,4 +95,9 @@ class LibraryPanel(urwid.Columns):
 		self.albums = albums
 		self.tracks = tracks
 
-		super(LibraryPanel, self).__init__((artists, albums, tracks))
+		attr = 'library.divider'
+		div1 = urwid.AttrWrap(util.VDivider("│"), attr, attr)
+		div2 = urwid.AttrWrap(util.VDivider("│"), attr, attr)
+
+		wlist = artists, ('fixed', 1, div1), albums, ('fixed', 1, div2), tracks
+		super(LibraryPanel, self).__init__(wlist)

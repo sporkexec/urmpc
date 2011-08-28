@@ -1,4 +1,5 @@
 import datetime
+import urwid
 
 class timedelta(datetime.timedelta):
 	"""Format times in a manner suitable for music.
@@ -29,4 +30,18 @@ class timedelta(datetime.timedelta):
 		output.append(str(seconds).zfill(2))
 
 		return days + ':'.join(output)
+
+
+class VDivider(urwid.BoxWidget):
+	def __init__(self, div_char=' ', top=0, bottom=0):
+		super(VDivider, self).__init__()
+		self._div_char = div_char
+		self._top = top
+		self._bottom = bottom
+	def render(self, size, focus=False):
+		height = size[1]
+		element = self._top * ' ' + self._div_char + self._bottom * ' '
+		text = height * [element]
+
+		return urwid.TextCanvas(text, maxcol=size[0])
 

@@ -281,7 +281,7 @@ class MainHeader(urwid.Pile):
 
 		self.topline = urwid.Columns((self.currentsong, ('fixed', width, self.flags)))
 
-		border = urwid.BoxAdapter(urwid.SolidFill('─'), height=1)
+		border = urwid.Divider('─')
 		self.border = urwid.AttrMap(border, 'header.border', 'header.border')
 		super(MainHeader, self).__init__((self.topline, self.border))
 
