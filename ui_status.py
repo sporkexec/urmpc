@@ -185,3 +185,23 @@ class MainFooter(object):
 		if int(self.mpc.status()['playlistlength']) == 0:
 			signals.emit('user_notification', 'Cleared playlist!')
 
+class CurrentSong(urwid.Text):
+	def __init__(self, mpc):
+		self.mpc = mpc
+		super(CurrentSong, self).__init__('')
+		signals.listen('idle_player', self._player_update)
+
+	def _player_update(self):
+		if self.mpc.status()['state'] == 'stop':
+			self.set_text('')
+			return True
+
+		item = self.mpc.currentsong()
+		if 'artist' not in item: item['artist'] = '[None]'
+		#if 'album' not in item: item['album'] = '[None]'
+		if 'title' not in item: item['title'] = '[None]'
+
+		self.set_text('%s: %s' % (item['artist'], item['title']))
+		return True
+
+
