@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import urwid
 
 import signals
@@ -205,4 +206,82 @@ class CurrentSong(urwid.Text):
 		self.set_text('%s: %s' % (item['artist'], item['title']))
 		return True
 
+class DaemonFlags(urwid.Text):
+	_flags = {}
+	_flags_keys = 'Repeat', 'Random', 'Single', 'Consume', 'Crossfade', 'Update'
+	_flags_mapping = {
+		'Repeat': 'r',
+		'Random': 'z',
+		'Single': 's',
+		'Consume': 'c',
+		'Crossfade': 'x',
+		'Update': 'U',
+	}
+	def __init__(self, mpc):
+		self.mpc = mpc
+		super(DaemonFlags, self).__init__('')
+		signals.listen('idle_options', self._options_update)
+		signals.listen('idle_update', self._options_update)
+		self._flags = self._get_flags()
+		self._render_flags()
+
+	def _get_flags(self):
+		flags = {}
+		status = self.mpc.status()
+		flags['Repeat'] = status['repeat'] == '1'
+		flags['Random'] = status['random'] == '1'
+		flags['Single'] = status['single'] == '1'
+		flags['Consume'] = status['consume'] == '1'
+		flags['Crossfade'] = int(status['xfade']) # not boolean
+		flags['Update'] = 'updating_db' in status # not strictly boolean
+		return flags
+
+	def _options_update(self):
+		newflags = self._get_flags()
+		if newflags == self._flags:
+			return False
+
+		message = None
+		onoff = lambda b: 'On' if b else 'Off'
+
+		for mode in self._flags_keys:
+			if mode == 'Update': continue
+			if mode == 'Crossfade':
+				if newflags['Crossfade'] != self._flags['Crossfade']:
+					message = '%s set to %s seconds' % (mode, newflags[mode])
+			elif newflags[mode] != self._flags[mode]:
+				message = '%s mode is %s' % (mode, onoff(newflags[mode]))
+
+		if message is not None:
+			signals.emit('user_notification', message)
+
+		self._flags = newflags
+		return self._render_flags()
+
+	def _render_flags(self):
+		output = []
+		for mode in self._flags_keys:
+			if int(self._flags[mode]): # Avoids special-casing crossfade.
+				output.append(self._flags_mapping[mode])
+			else:
+				output.append('-')
+
+		output = '['+ ''.join(output) +']'
+		self.set_text(output)
+		return True
+
+class MainHeader(urwid.Pile):
+	def __init__(self, mpc):
+		self.mpc = mpc
+		self.currentsong = CurrentSong(mpc)
+
+		self.flags = DaemonFlags(mpc)
+		width = self.flags.pack()[0]
+		self.flags = urwid.AttrMap(self.flags, 'header.flags', 'header.flags')
+
+		self.topline = urwid.Columns((self.currentsong, ('fixed', width, self.flags)))
+
+		border = urwid.BoxAdapter(urwid.SolidFill('─'), height=1)
+		self.border = urwid.AttrMap(border, 'header.border', 'header.border')
+		super(MainHeader, self).__init__((self.topline, self.border))
 

@@ -6,6 +6,9 @@ import signals
 from ui_main import MainFrame
 
 palette = [
+	('header.flags', 'light cyan', 'default'),
+	('header.border', 'dark gray', 'default'),
+
 	('library.column', 'default', 'black'),
 	('library.column.focus', 'dark cyan,standout', 'black'),
 

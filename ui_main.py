@@ -34,7 +34,7 @@ class MainFrame(urwid.Frame):
 
 		self.librarypanel = LibraryPanel(mpc)
 		self.nowplayingpanel = NowPlayingPanel(mpc)
-		self.header = ui_status.CurrentSong(mpc)
+		self.header = ui_status.MainHeader(mpc)
 		self.footer = ui_status.MainFooter(mpc)
 
 		super(MainFrame, self).__init__(self.librarypanel, header=self.header,
