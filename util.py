@@ -38,6 +38,8 @@ class VDivider(urwid.BoxWidget):
 		self._div_char = div_char
 		self._top = top
 		self._bottom = bottom
+		self._selectable = False
+
 	def render(self, size, focus=False):
 		height = size[1]
 		element = self._top * ' ' + self._div_char + self._bottom * ' '
@@ -45,3 +47,4 @@ class VDivider(urwid.BoxWidget):
 
 		return urwid.TextCanvas(text, maxcol=size[0])
 
+	def keypress(self, size, key): return key
