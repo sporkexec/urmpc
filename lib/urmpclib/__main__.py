@@ -26,25 +26,22 @@ palette = [
 	('footer.progress.smoothed', 'dark green', 'black'),
 ]
 
-if __name__ == '__main__':
-	mpc = urmpd.MPDClient()
-	mpc.connect('localhost', 6600)
-	event_loop = urwid.SelectEventLoop()
+mpc = urmpd.MPDClient()
+mpc.connect('localhost', 6600)
+event_loop = urwid.SelectEventLoop()
 
+# Get urwid set up
+#FIXME: Passing None in here is ugly and will eventually break if urwid decides
+#       to be more strict about it.
+loop = urwid.MainLoop(None, palette, event_loop=event_loop)
+signals._mainloop = loop
 
-	# Get urwid set up
-	#FIXME: Passing None in here is ugly and will eventually break if urwid decides
-	#       to be more strict about it.
-	loop = urwid.MainLoop(None, palette, event_loop=event_loop)
-	signals._mainloop = loop
+# Main widget uses mpd
+frame = MainFrame(mpc)
+loop.widget = frame
 
-	# Main widget uses mpd
-	frame = MainFrame(mpc)
-	loop.widget = frame
+# Idler runs cloned mpc connection, uses MainLoop to force redraw on MPD events
+idler = urmpd.Idler(mpc, loop)
+event_loop.watch_file(idler, idler)
 
-	# Idler runs cloned mpc connection, uses MainLoop to force redraw on MPD events
-	idler = urmpd.Idler(mpc, loop)
-	event_loop.watch_file(idler, idler)
-
-	loop.run()
-
+loop.run()
