@@ -53,7 +53,6 @@ class MainFrame(urwid.Frame):
 			self.set_body(self.nowplayingpanel)
 		elif self.get_body() is self.nowplayingpanel:
 			self.set_body(self.librarypanel)
-		#FIXME: Footer statuses not acknowledged in nowplayingpanel?
 
 	def quit(self):
 		raise urwid.ExitMainLoop()

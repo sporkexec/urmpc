@@ -117,7 +117,7 @@ class CurrentSongProgress(ProgressBar_):
 		self.set_completion(self.current+1)
 		signals.redraw()
 
-class MainFooter(object):
+class MainFooter(urwid.WidgetWrap):
 	mpc = None
 	_notification = None, None
 	_notification_alarm = None
@@ -125,10 +125,8 @@ class MainFooter(object):
 	# Valid widgets we can be rendering
 	_components = '_progress_bar', '_notification_bar'
 	_progress_bar, _notification_bar = None, None
-	_current = None
 
 	def __init__(self, mpc):
-		super(MainFooter, self).__init__()
 		self.mpc = mpc
 		self._notification_bar = urwid.Text('')
 		self._progress_bar = CurrentSongProgress(mpc,
@@ -138,21 +136,16 @@ class MainFooter(object):
 		signals.listen('user_notification', self.notify)
 		signals.listen('idle_update', self._notify_update)
 		signals.listen('idle_playlist', self._playlist_update)
+
+		super(MainFooter, self).__init__(self._progress_bar)
 		self._change_current()
 
 	def _change_current(self, name=None):
 		if name in self._components:
-			self._current = getattr(self, name)
+			self._w = getattr(self, name)
 		elif name is None:
 			# Any logic to automatically determine current goes here.
-			self._current = self._progress_bar
-
-	def _get_current(self):
-		return self._current
-
-	def __getattr__(self, attr):
-		"""Masquerade as our current widget."""
-		return getattr(self._get_current(), attr)
+			self._w = self._progress_bar
 
 	def notify(self, message, interval=1.0): #TODO: Config interval default.
 		"""Adds a notification to be displayed in the status bar.
@@ -166,7 +159,7 @@ class MainFooter(object):
 			self._notification_alarm = None
 		self._change_current('_notification_bar')
 		self._notification = None, None
-		self.set_text(str(message))
+		self._notification_bar.set_text(str(message))
 		self._notification_alarm = signals.alarm_in(interval, self._clear_notification)
 		signals.redraw()
 
