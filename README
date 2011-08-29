@@ -21,3 +21,42 @@ Direct Installation
 
 Running urmpc In-place (without installing):
 $ cd bin && ./urmpc
+
+
+Usage
+
+Almost exactly like ncmpcpp.
+
+In Library panel:
+	Space: queue
+	Enter: queue and play
+
+In Playlist panel:
+	d, Delete: delete from playlist
+	Enter: play this track
+	n: move this track up
+	m: move this track down
+	o: jump to currently playing track
+
+Global Keys:
+	We support vi-like navigation as well as arrow keys. g is Home, G is end.
+	p: play/pause
+	>: next track
+	<: previous track
+	s: stop
+	c: clear playlist
+	Z: shuffle playlist
+	+: raise volume
+	-: lower volume
+	f: seek forward
+	b: seek backward
+
+	r: toggle repeat mode
+	z: toggle random mode
+	y: toggle single mode
+	R: toggle consume mode
+	x: toggle crossfade
+	u: force database update
+
+	tab: switch between Library and Playlist panels
+	q, Q: quit
