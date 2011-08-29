@@ -1,0 +1,23 @@
+urmpc
+
+urmpc is a console MPD client written in Python using the urwid library. It is
+heavily influenced by ncmpcpp, but aims to be more configurable and have less
+feature bloat. For example, urmpc does not aspire to have a tag editor because
+this violates one of Unix's central tenet's (do one thing and do it well) and
+because there are already many fine tag editors on the market.
+
+This software is still under heavy development but already accomplishes nearly
+everything the author needs on a typical day. Features such as search and saved
+playlists are not yet implemented, however, so your mileage may vary.
+
+
+Installation
+
+When available, it is recommended to use your distribution's standard packaging
+system to install urmpc.
+
+Direct Installation
+# python2 setup.py install
+
+Running urmpc In-place (without installing):
+$ cd bin && ./urmpc
