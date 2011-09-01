@@ -1,0 +1,57 @@
+[mpd]
+host = localhost
+port = 6600
+
+[controls]
+; How far to seek and whether by seconds or percentage.
+; Skipping by percentage may seem strange when skipping over track boundaries.
+; You could potentially skip an entire track if x% of one song is longer than
+; the entire song after/before. This should be rare unless you have lots of 10
+; second tracks next to 10 minute tracks.
+seek_diff = 5
+seek_percentage = True
+
+crossfade = 3   ; Seconds for crossfade toggle
+volume_diff = 1 ; How much to adjust volume (percentage)
+
+[library]
+divider=│
+ignore_leading_the = True ; Alphabetic sorts
+
+[palette]
+header.flags.fg = light cyan
+header.flags.bg = default
+header.border.fg = dark gray
+header.border.bg = default
+
+footer.progress.fg = white
+footer.progress.bg = black
+footer.progress.elapsed.fg = white
+footer.progress.elapsed.bg = dark green
+footer.progress.smoothed.fg = dark green
+footer.progress.smoothed.bg = black
+
+library.column.fg = default
+library.column.bg = black
+library.column.focus.fg = dark cyan,standout
+library.column.focus.bg = black
+library.divider.fg = dark gray
+library.divider.bg = default
+
+playlist.time.fg = dark cyan
+playlist.time.bg = default
+playlist.artist.fg = dark magenta
+playlist.artist.bg = default
+playlist.title.fg = dark green
+playlist.title.bg = default
+playlist.album.fg = dark red
+playlist.album.bg = default
+playlist.time.focus.fg = dark cyan,standout
+playlist.time.focus.bg =default
+playlist.artist.focus.fg = dark magenta,standout
+playlist.artist.focus.bg =default
+playlist.title.focus.fg = dark green,standout
+playlist.title.focus.bg =default
+playlist.album.focus.fg = dark red,standout
+playlist.album.focus.bg =default
+

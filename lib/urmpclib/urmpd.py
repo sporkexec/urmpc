@@ -3,6 +3,7 @@ import mpd
 import urwid
 
 import signals
+from configuration import config
 
 # See http://www.musicpd.org/doc/protocol/ch03.html
 idle_events = (
@@ -84,7 +85,7 @@ class MPDClient(mpd.MPDClient):
 		# Really, 'xfade'? Four characters saved, good job!
 		value = int(self.status()['xfade'])
 		if value == 0:
-			value = 3 #FIXME: This (and other things) should be configurable.
+			value = int(config.controls.crossfade)
 		else:
 			value = 0
 		# With inconsistency as the cherry on top.
@@ -92,10 +93,10 @@ class MPDClient(mpd.MPDClient):
 
 	def volume_up(self):
 		vdiff = 1
-		self.volume_diff(vdiff) #FIXME config
+		self.volume_diff(int(config.controls.volume_diff))
 	def volume_down(self):
 		vdiff = 1
-		self.volume_diff(vdiff * -1) #FIXME config
+		self.volume_diff(int(config.controls.volume_diff) * -1)
 	def volume_diff(self, diff):
 		level = diff + int(self.status()['volume'])
 		if diff > 0:
@@ -139,7 +140,7 @@ class MPDClient(mpd.MPDClient):
 			self.urseek(total+target, False, False)
 		else:
 			# Typical case
-			self.seek(song, target)
+			self.seek(song, int(target))
 
 class Idler(MPDClient):
 	"""Idles for MPD events and reports them."""

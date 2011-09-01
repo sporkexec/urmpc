@@ -193,7 +193,6 @@ class CurrentSong(urwid.Text):
 
 		item = self.mpc.currentsong()
 		if 'artist' not in item: item['artist'] = '[None]'
-		#if 'album' not in item: item['album'] = '[None]'
 		if 'title' not in item: item['title'] = '[None]'
 
 		self.set_text('%s: %s' % (item['artist'], item['title']))

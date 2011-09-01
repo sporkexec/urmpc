@@ -3,6 +3,8 @@ import mpd
 
 import signals
 import util
+import configuration
+from configuration import config
 
 class IOWalker(urwid.ListWalker):
 	def __init__(self):
@@ -67,8 +69,8 @@ class IOWalker(urwid.ListWalker):
 class ArtistWalker(IOWalker):
 	def __init__(self, mpc):
 		self.mpc = mpc
-		ignore_leading_the = True
-		if ignore_leading_the:
+		ignore_leading_the = config.library.ignore_leading_the
+		if configuration.truthiness(ignore_leading_the):
 			def sort(artist):
 				artist = artist.lower()
 				if artist.startswith('the '):

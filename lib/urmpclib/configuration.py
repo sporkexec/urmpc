@@ -1,5 +1,32 @@
 from ConfigParser import SafeConfigParser as ConfigParser
 
+def truthiness(value):
+	# I'll probably end up regretting this.
+	return value.strip().lower() in ('y', 'yes', 't', 'true', '1',)
+
+def extract_palette(config, section):
+	section = config[section]
+	data = {} # {attribute: {'fg': fg, 'bg': bg}} mapping
+	for k, v in section.items():
+		if k.endswith('.fg'):
+			key = k[:-3]
+			subkey = 'fg'
+		elif k.endswith('.bg'):
+			key = k[:-3]
+			subkey = 'bg'
+		else:
+			continue
+		if key not in data:
+			data[key] = {}
+		data[key][subkey] = v
+
+	palette = []
+	for attribute, v in data.items():
+		fg = v.get('fg', None)
+		bg = v.get('bg', None)
+		palette.append((attribute, fg, bg))
+	return palette
+
 class ConfigSection(dict):
 	"""Holds a section of ConfigParser options.
 
@@ -8,8 +35,6 @@ class ConfigSection(dict):
 	Subsections can go to arbitrary depth.
 	Returns new ConfigSecion holding subsection when detected."""
 
-	#TODO: Add sections(), has_section(key) methods to manage subsections.
-	#      Same/similar interface as ConfigParser is ideal.
 	def __getitem__(self, key):
 		if key in self:
 			return super(ConfigSection, self).__getitem__(key)
@@ -30,6 +55,13 @@ class ConfigSection(dict):
 		except KeyError as e:
 			raise AttributeError(e.message)
 
+	def sections(self):
+		"""Returns all subsection keys, i.e. values before '.' in keys."""
+		return tuple(set((k[:k.index('.')] for k in self.keys() if '.' in k)))
+
+	def has_section(self, key):
+		return key == 'DEFAULT' or key in self.sections()
+
 class Config(ConfigParser):
 	"""ConfigParser that lets you access sections or top-level options.
 
@@ -48,9 +80,5 @@ class Config(ConfigParser):
 		except AttributeError as e:
 			raise KeyError(e.message)
 
-config = None
-def readfile(filename):
-	global config
-	config = Config()
-	config.read(filename)
+config = Config() # Side-effects from importing are bad, be sure __init__ is ok
 

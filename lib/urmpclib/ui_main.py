@@ -4,10 +4,14 @@ import urwid
 import ui_lists
 import ui_status
 import util
+import configuration
+from configuration import config
 
 class MainFrame(urwid.Frame):
 	def __init__(self, mpc):
 		self.mpc = mpc
+		seek_diff = int(config.controls.seek_diff)
+		seek_percentage = configuration.truthiness(config.controls.seek_percentage)
 		self.keymap = {
 			'p': self.mpc.playpause,
 			'>': self.mpc.next,
@@ -19,8 +23,8 @@ class MainFrame(urwid.Frame):
 			'u': self.mpc.update,
 			'-': self.mpc.volume_down,
 			'+': self.mpc.volume_up,
-			'b': lambda: self.mpc.urseek(-5, False, False), #FIXME config
-			'f': lambda: self.mpc.urseek(5, False, False), #FIXME config
+			'b': lambda: self.mpc.urseek(seek_diff * -1, False, seek_percentage),
+			'f': lambda: self.mpc.urseek(seek_diff, False, seek_percentage),
 
 			'y': self.mpc.toggle('single'),
 			'r': self.mpc.toggle('repeat'),
@@ -95,8 +99,9 @@ class LibraryPanel(urwid.Columns):
 		self.tracks = tracks
 
 		attr = 'library.divider'
-		div1 = urwid.AttrWrap(util.VDivider("│"), attr, attr)
-		div2 = urwid.AttrWrap(util.VDivider("│"), attr, attr)
+		divstr = config.library.divider
+		div1 = urwid.AttrWrap(util.VDivider(divstr), attr, attr)
+		div2 = urwid.AttrWrap(util.VDivider(divstr), attr, attr)
 
-		wlist = artists, ('fixed', 1, div1), albums, ('fixed', 1, div2), tracks
+		wlist = artists, ('fixed', len(divstr), div1), albums, ('fixed', len(divstr), div2), tracks
 		super(LibraryPanel, self).__init__(wlist)

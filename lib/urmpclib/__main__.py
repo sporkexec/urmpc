@@ -4,30 +4,14 @@ import urmpd
 import signals
 from ui_main import MainFrame
 
-palette = [
-	('header.flags', 'light cyan', 'default'),
-	('header.border', 'dark gray', 'default'),
+import configuration
+from configuration import config
+config.read('urmpclib/urmpc.conf.example')
 
-	('library.column', 'default', 'black'),
-	('library.column.focus', 'dark cyan,standout', 'black'),
-	('library.divider', 'dark gray', 'default'),
-
-	('playlist.time', 'dark cyan', 'default'),
-	('playlist.artist', 'dark magenta', 'default'),
-	('playlist.title', 'dark green', 'default'),
-	('playlist.album', 'dark red', 'default'),
-	('playlist.time.focus', 'dark cyan,standout', 'default'),
-	('playlist.artist.focus', 'dark magenta,standout', 'default'),
-	('playlist.title.focus', 'dark green,standout', 'default'),
-	('playlist.album.focus', 'dark red,standout', 'default'),
-
-	('footer.progress', 'white', 'black'),
-	('footer.progress.elapsed', 'white', 'dark green'),
-	('footer.progress.smoothed', 'dark green', 'black'),
-]
+palette = configuration.extract_palette(config, 'palette')
 
 mpc = urmpd.MPDClient()
-mpc.connect('localhost', 6600)
+mpc.connect(config.mpd.host, int(config.mpd.port))
 event_loop = urwid.SelectEventLoop()
 
 # Get urwid set up
