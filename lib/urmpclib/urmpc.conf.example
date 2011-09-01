@@ -4,7 +4,7 @@ port = 6600
 
 [controls]
 ; How far to seek and whether by seconds or percentage.
-; Skipping by percentage may seem strange when skipping over track boundaries.
+; Seeking by percentage may seem strange when skipping over track boundaries.
 ; You could potentially skip an entire track if x% of one song is longer than
 ; the entire song after/before. This should be rare unless you have lots of 10
 ; second tracks next to 10 minute tracks.
@@ -47,11 +47,10 @@ playlist.title.bg = default
 playlist.album.fg = dark red
 playlist.album.bg = default
 playlist.time.focus.fg = dark cyan,standout
-playlist.time.focus.bg =default
+playlist.time.focus.bg = default
 playlist.artist.focus.fg = dark magenta,standout
-playlist.artist.focus.bg =default
+playlist.artist.focus.bg = default
 playlist.title.focus.fg = dark green,standout
-playlist.title.focus.bg =default
+playlist.title.focus.bg = default
 playlist.album.focus.fg = dark red,standout
-playlist.album.focus.bg =default
-
+playlist.album.focus.bg = default
