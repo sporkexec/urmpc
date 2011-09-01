@@ -5,8 +5,11 @@ class ConfigSection(dict):
 
 	Attribute and dictionary syntaxes are supported.
 	Supports subsections, i.e. subsection.option keys within main sections.
+	Subsections can go to arbitrary depth.
 	Returns new ConfigSecion holding subsection when detected."""
 
+	#TODO: Add sections(), has_section(key) methods to manage subsections.
+	#      Same/similar interface as ConfigParser is ideal.
 	def __getitem__(self, key):
 		if key in self:
 			return super(ConfigSection, self).__getitem__(key)
