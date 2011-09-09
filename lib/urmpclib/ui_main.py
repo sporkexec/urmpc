@@ -10,8 +10,8 @@ from configuration import config
 class MainFrame(urwid.Frame):
 	def __init__(self, mpc):
 		self.mpc = mpc
-		seek_diff = int(config.controls.seek_diff)
-		seek_percentage = configuration.truthiness(config.controls.seek_percentage)
+		seek_diff = int(config.mpd.seek_diff)
+		seek_percentage = configuration.truthiness(config.mpd.seek_percentage)
 		self.keymap = {
 			'p': self.mpc.playpause,
 			'>': self.mpc.next,
@@ -98,10 +98,11 @@ class LibraryPanel(urwid.Columns):
 		self.albums = albums
 		self.tracks = tracks
 
-		attr = 'library.divider'
-		divstr = config.library.divider
+		attr = 'library.vdivider'
+		divstr = config.format.library.vdivider
+		divlen = len(divstr.decode('utf-8'))
 		div1 = urwid.AttrWrap(util.VDivider(divstr), attr, attr)
 		div2 = urwid.AttrWrap(util.VDivider(divstr), attr, attr)
 
-		wlist = artists, ('fixed', len(divstr), div1), albums, ('fixed', len(divstr), div2), tracks
+		wlist = artists, ('fixed', divlen, div1), albums, ('fixed', divlen, div2), tracks
 		super(LibraryPanel, self).__init__(wlist)

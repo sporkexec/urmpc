@@ -2,7 +2,6 @@
 host = localhost
 port = 6600
 
-[controls]
 ; How far to seek and whether by seconds or percentage.
 ; Seeking by percentage may seem strange when skipping over track boundaries.
 ; You could potentially skip an entire track if x% of one song is longer than
@@ -14,9 +13,10 @@ seek_percentage = True
 crossfade = 3   ; Seconds for crossfade toggle
 volume_diff = 1 ; How much to adjust volume (percentage)
 
-[library]
-divider=│
-ignore_leading_the = True ; Alphabetic sorts
+[format]
+library.vdivider = " │ "
+library.ignore_leading_the = True ; Alphabetic sorts
+empty_tag = [None]
 
 [palette]
 header.flags.fg = light cyan
@@ -35,8 +35,8 @@ library.column.fg = default
 library.column.bg = black
 library.column.focus.fg = dark cyan,standout
 library.column.focus.bg = black
-library.divider.fg = dark gray
-library.divider.bg = default
+library.vdivider.fg = dark gray
+library.vdivider.bg = default
 
 playlist.time.fg = dark cyan
 playlist.time.bg = default

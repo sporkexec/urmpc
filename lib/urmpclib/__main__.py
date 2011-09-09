@@ -28,4 +28,7 @@ loop.widget = frame
 idler = urmpd.Idler(mpc, loop)
 event_loop.watch_file(idler, idler)
 
-loop.run()
+try:
+	loop.run()
+except KeyboardInterrupt as e:
+	pass

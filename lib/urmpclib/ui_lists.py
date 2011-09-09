@@ -69,7 +69,7 @@ class IOWalker(urwid.ListWalker):
 class ArtistWalker(IOWalker):
 	def __init__(self, mpc):
 		self.mpc = mpc
-		ignore_leading_the = config.library.ignore_leading_the
+		ignore_leading_the = config.format.library.ignore_leading_the
 		if configuration.truthiness(ignore_leading_the):
 			def sort(artist):
 				artist = artist.lower()
@@ -87,7 +87,7 @@ class ArtistWalker(IOWalker):
 
 	def _format(self, item):
 		if item == '':
-			item = '[None]'
+			item = config.format.empty_tag
 		item = urwid.Text(item)
 		item.set_wrap_mode('clip')
 		item = urwid.AttrMap(item,
@@ -127,7 +127,7 @@ class AlbumWalker(IOWalker):
 
 	def _format(self, item):
 		if item == '':
-			item = '[None]'
+			item = config.format.empty_tag
 		item = urwid.Text(item)
 		item.set_wrap_mode('clip')
 		item = urwid.AttrMap(item,
@@ -178,7 +178,7 @@ class TrackWalker(IOWalker):
 		except KeyError as e:
 			text = item['file']
 		if text == '':
-			text = '[None]'
+			text = config.format.empty_tag
 		text = urwid.Text(text)
 		text.set_wrap_mode('clip')
 		text = urwid.AttrMap(text,
@@ -212,7 +212,7 @@ class TrackWalker(IOWalker):
 		try:
 			artist = item['artist']
 		except KeyError as e:
-			artist = '[None]'
+			artist = config.format.empty_tag
 		
 		signals.emit('user_notification', 'Adding "%s" by %s' % (name, artist))
 		return song_id
@@ -285,9 +285,9 @@ class NowPlayingWalker(IOWalker):
 		return self.mpc.playlistinfo()
 
 	def _format(self, item):
-		if 'artist' not in item: item['artist'] = '[None]'
-		if 'album' not in item: item['album'] = '[None]'
-		if 'title' not in item: item['title'] = '[None]'
+		if 'artist' not in item: item['artist'] = config.format.empty_tag
+		if 'album' not in item: item['album'] = config.format.empty_tag
+		if 'title' not in item: item['title'] = config.format.empty_tag
 
 		time = str(util.timedelta(seconds=int(item['time'])))
 		time = urwid.AttrMap(urwid.Text(time, wrap='clip', align='left'), 'time')

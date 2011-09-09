@@ -37,7 +37,12 @@ class ConfigSection(dict):
 
 	def __getitem__(self, key):
 		if key in self:
-			return super(ConfigSection, self).__getitem__(key)
+			ret = super(ConfigSection, self).__getitem__(key)
+			try:
+				ret = ret.strip('"')
+			except AttrbuteError as e:
+				pass
+			return ret
 
 		subsections = []
 		for k, v in self.items():
@@ -72,7 +77,12 @@ class Config(ConfigParser):
 			return ConfigSection(self.items(key))
 		else:
 			section = ConfigSection(self.items('DEFAULT'))
-			return section.__getattr__(key)
+			ret = section.__getattr__(key)
+			try:
+				ret = ret.strip('"')
+			except AttrbuteError as e:
+				pass
+			return ret
 
 	def __getitem__(self, key):
 		try:
@@ -81,4 +91,3 @@ class Config(ConfigParser):
 			raise KeyError(e.message)
 
 config = Config() # Side-effects from importing are bad, be sure __init__ is ok
-

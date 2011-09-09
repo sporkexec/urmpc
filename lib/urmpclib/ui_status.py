@@ -4,10 +4,7 @@ import urwid
 import signals
 import util
 
-# File "/usr/lib/python2.7/site-packages/urwid/util.py", line 431, in __init__
-#	raise AttributeError, "Class has same name as one of its super classes"
-# lol wut's a namespace, guys? PROTIP: metaclasses are usually overengineering.
-# And so we can't just name it ProgressBar...
+#TODO: Remove this on next urwid release, this has been added.
 class ProgressBar_(urwid.ProgressBar):
 	"""Because urwid.ProgressBar can't do anything but "%s %" centered.
 	If you're watching, Ian, this is one of the little things on my wishlist."""
@@ -112,7 +109,6 @@ class CurrentSongProgress(ProgressBar_):
 			self._progress_alarm = signals.alarm_in(1.0, self._progress_increment)
 
 	def _progress_increment(self, *_):
-		#TODO?: Try to sync this to actual time more accurately?
 		self._progress_alarm = signals.alarm_in(1.0, self._progress_increment)
 		self.set_completion(self.current+1)
 		signals.redraw()
@@ -192,8 +188,8 @@ class CurrentSong(urwid.Text):
 			return True
 
 		item = self.mpc.currentsong()
-		if 'artist' not in item: item['artist'] = '[None]'
-		if 'title' not in item: item['title'] = '[None]'
+		if 'artist' not in item: item['artist'] = config.format.empty_tag
+		if 'title' not in item: item['title'] = config.format.empty_tag
 
 		self.set_text('%s: %s' % (item['artist'], item['title']))
 		return True

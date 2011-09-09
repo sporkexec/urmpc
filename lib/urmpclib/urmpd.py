@@ -85,7 +85,7 @@ class MPDClient(mpd.MPDClient):
 		# Really, 'xfade'? Four characters saved, good job!
 		value = int(self.status()['xfade'])
 		if value == 0:
-			value = int(config.controls.crossfade)
+			value = int(config.mpd.crossfade)
 		else:
 			value = 0
 		# With inconsistency as the cherry on top.
@@ -93,10 +93,10 @@ class MPDClient(mpd.MPDClient):
 
 	def volume_up(self):
 		vdiff = 1
-		self.volume_diff(int(config.controls.volume_diff))
+		self.volume_diff(int(config.mpd.volume_diff))
 	def volume_down(self):
 		vdiff = 1
-		self.volume_diff(int(config.controls.volume_diff) * -1)
+		self.volume_diff(int(config.mpd.volume_diff) * -1)
 	def volume_diff(self, diff):
 		level = diff + int(self.status()['volume'])
 		if diff > 0:
