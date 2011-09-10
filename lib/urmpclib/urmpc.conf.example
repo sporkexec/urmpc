@@ -54,3 +54,25 @@ playlist.title.focus.fg = dark green,standout
 playlist.title.focus.bg = default
 playlist.album.focus.fg = dark red,standout
 playlist.album.focus.bg = default
+
+[keymap]
+globals = {
+	"playpause": "p",
+	"next_track": ">",
+	"previous_track": "<",
+	"stop": "s",
+	"clear_playlist": "c",
+	"shuffle": "Z",
+	"update_database": "u",
+	"volume_down": "-",
+	"volume_up": "+",
+	"seek_back": "b",
+	"seek_forth": "f",
+	"toggle_single": "y",
+	"toggle_repeat": "r",
+	"toggle_random": "z",
+	"toggle_consume": "R",
+	"toggle_crossfade": "x",
+	"switch_panel": "tab",
+	"exit": ["q", "Q"]
+	}

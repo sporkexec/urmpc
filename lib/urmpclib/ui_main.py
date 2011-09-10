@@ -12,32 +12,28 @@ class MainFrame(urwid.Frame):
 		self.mpc = mpc
 		seek_diff = int(config.mpd.seek_diff)
 		seek_percentage = configuration.truthiness(config.mpd.seek_percentage)
-		self.keymap = {
-			'p': self.mpc.playpause,
-			'>': self.mpc.next,
-			'<': self.mpc.previous,
-
-			's': self.mpc.stop,
-			'c': self.mpc.clear,
-			'Z': self.mpc.shuffle,
-			'u': self.mpc.update,
-			'-': self.mpc.volume_down,
-			'+': self.mpc.volume_up,
-			'b': lambda: self.mpc.urseek(seek_diff * -1, False, seek_percentage),
-			'f': lambda: self.mpc.urseek(seek_diff, False, seek_percentage),
-
-			'y': self.mpc.toggle('single'),
-			'r': self.mpc.toggle('repeat'),
-			'z': self.mpc.toggle('random'),
-			'R': self.mpc.toggle('consume'),
-			'x': self.mpc.toggle_crossfade,
-
-			'tab': self.toggle_panel,
-
-			'q': self.quit,
-			'Q': self.quit,
+		self.actionmap = {
+			'playpause': self.mpc.playpause,
+			'next_track': self.mpc.next,
+			'previous_track': self.mpc.previous,
+			'stop': self.mpc.stop,
+			'clear_playlist': self.mpc.clear,
+			'shuffle': self.mpc.shuffle,
+			'update_database': self.mpc.update,
+			'volume_down': self.mpc.volume_down,
+			'volume_up': self.mpc.volume_up,
+			'seek_back': lambda: self.mpc.urseek(seek_diff * -1, False, seek_percentage),
+			'seek_forth': lambda: self.mpc.urseek(seek_diff, False, seek_percentage),
+			'toggle_single': self.mpc.toggle('single'),
+			'toggle_repeat': self.mpc.toggle('repeat'),
+			'toggle_random': self.mpc.toggle('random'),
+			'toggle_consume': self.mpc.toggle('consume'),
+			'toggle_crossfade': self.mpc.toggle_crossfade,
+			'switch_panel': self.toggle_panel,
+			'exit': self.quit,
 		}
 
+		self.keymap = configuration.KeyMapper(self.actionmap, config.keymap.globals)
 		self.librarypanel = LibraryPanel(mpc)
 		self.nowplayingpanel = NowPlayingPanel(mpc)
 		self.header = ui_status.MainHeader(mpc)
@@ -48,7 +44,7 @@ class MainFrame(urwid.Frame):
 
 	def keypress(self, size, key):
 		if key in self.keymap:
-			return self.keymap[key]()
+			return self.keymap(key)
 		else:
 			return super(MainFrame, self).keypress(size, key)
 
