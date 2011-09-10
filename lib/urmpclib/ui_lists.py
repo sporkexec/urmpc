@@ -19,8 +19,10 @@ class IOWalker(urwid.ListWalker):
 		self._modified()
 
 	def get_next(self, pos):
+		if pos is None: return None, None
 		return self._get_at_pos(pos + 1)
 	def get_prev(self, pos):
+		if pos is None: return None, None
 		return self._get_at_pos(pos - 1)
 
 	def _get_raw(self, pos):
@@ -219,25 +221,22 @@ class TrackWalker(IOWalker):
 
 class TreeList(urwid.ListBox):
 	def __init__(self, *args, **kwargs):
-		self.keyremap = {
-			'h': 'left',
-			'j': 'down',
-			'k': 'up',
-			'l': 'right',
-			'g': 'home',
-			'G': 'end',
+		actionmap = {
+			'left': lambda s: self._keypress_remap(s, 'left'),
+			'right': lambda s: self._keypress_remap(s, 'right'),
+			'page up': lambda s: self._keypress_remap(s, 'page up'),
+			'page down': lambda s: self._keypress_remap(s, 'page down'),
+			'up': self._keypress_up,
+			'down': lambda s: self._keypress_down(s),
+			'home': lambda _: self._scroll_top(),
+			'end': lambda _: self._scroll_bottom(),
 		}
-		self.keymap = {
-			'home': self._scroll_top,
-			'end': self._scroll_bottom,
-		}
+		self.keymap = configuration.KeyMapper(actionmap, config.keymap.list)
 		return super(TreeList, self).__init__(*args, **kwargs)
 
 	def keypress(self, size, key):
-		if key in self.keyremap:
-			key = self.keyremap[key]
 		if key in self.keymap:
-			return self.keymap[key]()
+			return self.keymap(size, key)
 		else:
 			return super(TreeList, self).keypress(size, key)
 
@@ -247,7 +246,7 @@ class TreeList(urwid.ListBox):
 			return super(TreeList, self)._keypress_up(size)
 		w, pos = self.body.get_focus()
 		w, pos = self.body.get_prev(pos)
-		if w:
+		if w and pos is not None:
 			self.set_focus(pos)
 
 	def _keypress_down(self, size):
@@ -256,8 +255,11 @@ class TreeList(urwid.ListBox):
 			return super(TreeList, self)._keypress_down(size)
 		w, pos = self.body.get_focus()
 		w, pos = self.body.get_next(pos)
-		if w:
+		if w and pos is not None:
 			self.set_focus(pos)
+
+	def _keypress_remap(self, size, key):
+		return super(TreeList, self).keypress(size, key)
 
 	def _scroll_top(self):
 		self.set_focus(0)
@@ -268,12 +270,11 @@ class TreeList(urwid.ListBox):
 class PlayableList(TreeList):
 	def __init__(self, *args, **kwargs):
 		super(PlayableList, self).__init__(*args, **kwargs)
-		self.keyremap.update({
-		})
-		self.keymap.update({
-			'enter': self.body.play_current,
-			' ': self.body.queue_current,
-		})
+		actionmap = {
+			'play': lambda _: self.body.play_current(),
+			'queue': lambda _: self.body.queue_current(),
+		}
+		self.keymap.update(actionmap, config.keymap.playable_list)
 
 class NowPlayingWalker(IOWalker):
 	def __init__(self, mpc):
@@ -322,7 +323,8 @@ class NowPlayingWalker(IOWalker):
 
 	def set_focus(self, focus):
 		super(NowPlayingWalker, self).set_focus(focus)
-		urwid.emit_signal(self, 'change', self.items[focus])
+		if focus in self.items:
+			urwid.emit_signal(self, 'change', self.items[focus])
 
 	def play_current(self):
 		item = super(NowPlayingWalker, self)._get_raw(self.focus)

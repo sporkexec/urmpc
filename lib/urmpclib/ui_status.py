@@ -3,6 +3,7 @@ import urwid
 
 import signals
 import util
+from configuration import config
 
 #TODO: Remove this on next urwid release, this has been added.
 class ProgressBar_(urwid.ProgressBar):
@@ -269,7 +270,7 @@ class MainHeader(urwid.Pile):
 
 		self.topline = urwid.Columns((self.currentsong, ('fixed', width, self.flags)))
 
-		border = urwid.Divider('─')
+		border = urwid.Divider(config.format.header.divider)
 		self.border = urwid.AttrMap(border, 'header.border', 'header.border')
 		super(MainHeader, self).__init__((self.topline, self.border))
 

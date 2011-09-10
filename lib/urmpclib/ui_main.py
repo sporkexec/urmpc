@@ -13,24 +13,24 @@ class MainFrame(urwid.Frame):
 		seek_diff = int(config.mpd.seek_diff)
 		seek_percentage = configuration.truthiness(config.mpd.seek_percentage)
 		self.actionmap = {
-			'playpause': self.mpc.playpause,
-			'next_track': self.mpc.next,
-			'previous_track': self.mpc.previous,
-			'stop': self.mpc.stop,
-			'clear_playlist': self.mpc.clear,
-			'shuffle': self.mpc.shuffle,
-			'update_database': self.mpc.update,
-			'volume_down': self.mpc.volume_down,
-			'volume_up': self.mpc.volume_up,
-			'seek_back': lambda: self.mpc.urseek(seek_diff * -1, False, seek_percentage),
-			'seek_forth': lambda: self.mpc.urseek(seek_diff, False, seek_percentage),
-			'toggle_single': self.mpc.toggle('single'),
-			'toggle_repeat': self.mpc.toggle('repeat'),
-			'toggle_random': self.mpc.toggle('random'),
-			'toggle_consume': self.mpc.toggle('consume'),
-			'toggle_crossfade': self.mpc.toggle_crossfade,
-			'switch_panel': self.toggle_panel,
-			'exit': self.quit,
+			'playpause': lambda _: self.mpc.playpause(),
+			'next_track': lambda _: self.mpc.next(),
+			'previous_track': lambda _: self.mpc.previous(),
+			'stop': lambda _: self.mpc.stop(),
+			'clear_playlist': lambda _: self.mpc.clear(),
+			'shuffle': lambda _: self.mpc.shuffle(),
+			'update_database': lambda _: self.mpc.update(),
+			'volume_down': lambda _: self.mpc.volume_down(),
+			'volume_up': lambda _: self.mpc.volume_up(),
+			'seek_back': lambda _: self.mpc.urseek(seek_diff * -1, False, seek_percentage),
+			'seek_forth': lambda _: self.mpc.urseek(seek_diff, False, seek_percentage),
+			'toggle_single': lambda _: self.mpc.toggle('single')(),
+			'toggle_repeat': lambda _: self.mpc.toggle('repeat')(),
+			'toggle_random': lambda _: self.mpc.toggle('random')(),
+			'toggle_consume': lambda _: self.mpc.toggle('consume')(),
+			'toggle_crossfade': lambda _: self.mpc.toggle_crossfade(),
+			'switch_panel': lambda _: self.toggle_panel(),
+			'exit': lambda _: self.quit(),
 		}
 
 		self.keymap = configuration.KeyMapper(self.actionmap, config.keymap.globals)
@@ -44,7 +44,7 @@ class MainFrame(urwid.Frame):
 
 	def keypress(self, size, key):
 		if key in self.keymap:
-			return self.keymap(key)
+			return self.keymap(size, key)
 		else:
 			return super(MainFrame, self).keypress(size, key)
 
@@ -60,18 +60,14 @@ class MainFrame(urwid.Frame):
 class NowPlayingPanel(ui_lists.TreeList):
 	def __init__(self, mpc):
 		super(NowPlayingPanel, self).__init__(ui_lists.NowPlayingWalker(mpc))
-		self.keyremap.update({
-		})
-		self.keymap.update({
-			'enter': self.body.play_current,
-			'd': self.body.delete_current,
-			'delete': self.body.delete_current,
-			'J': self.body.swap_down,
-			'K': self.body.swap_up,
-			'n': self.body.swap_down,
-			'm': self.body.swap_up,
-			'o': self.body.focus_playing,
-		})
+		actionmap = {
+			'play': lambda _: self.body.play_current(),
+			'delete': lambda _: self.body.delete_current(),
+			'swap_below': lambda _: self.body.swap_down(),
+			'swap_above': lambda _: self.body.swap_up(),
+			'focus_current': lambda _: self.body.focus_playing(),
+		}
+		self.keymap.update(actionmap, config.keymap.now_playing)
 
 class LibraryPanel(urwid.Columns):
 	def __init__(self, mpc):

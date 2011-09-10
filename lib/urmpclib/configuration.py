@@ -30,13 +30,15 @@ def extract_palette(config, section):
 
 class KeyMapper(object):
 	"""Handles keypress configuration."""
-	_actionmap = {}
-	_keymap = {}
-
 	def __init__(self, actionmap, keymap):
 		"""actionmap: {action: callable} where action is a user-visible string.
 		keymap: {action: [keylist]}"""
-		self._actionmap = actionmap
+		self._actionmap = {}
+		self._keymap = {}
+		self.update(actionmap, keymap)
+
+	def update(self, actionmap, keymap):
+		self._actionmap.update([(k, v) for (k, v) in actionmap.items()])
 		for action, keys in keymap.items():
 			if type(keys) in (str, unicode):
 				self._keymap[keys] = action
@@ -48,9 +50,9 @@ class KeyMapper(object):
 		"""Whether key is set and actually does something."""
 		return key in self._keymap and self._keymap[key] in self._actionmap
 
-	def __call__(self, key):
+	def __call__(self, size, key):
 		assert key in self
-		return self._actionmap[self._keymap[key]]()
+		return self._actionmap[self._keymap[key]](size)
 
 class ConfigSection(dict):
 	"""Holds a section of ConfigParser options.

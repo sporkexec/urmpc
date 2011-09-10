@@ -1,3 +1,7 @@
+; This is an example configuration for urmpc.
+; All available options are shown in this file.
+; All options are mandatory except for those in the [palette] section.
+
 [mpd]
 host = localhost
 port = 6600
@@ -14,11 +18,13 @@ crossfade = 3   ; Seconds for crossfade toggle
 volume_diff = 1 ; How much to adjust volume (percentage)
 
 [format]
+header.divider = "─"
 library.vdivider = " │ "
 library.ignore_leading_the = True ; Alphabetic sorts
 empty_tag = [None]
 
 [palette]
+; See http://excess.org/urwid/wiki/DisplayAttributes for valid colors.
 header.flags.fg = light cyan
 header.flags.bg = default
 header.border.fg = dark gray
@@ -56,6 +62,11 @@ playlist.album.focus.fg = dark red,standout
 playlist.album.focus.bg = default
 
 [keymap]
+; Where multiple keybindings are given, the first is usually an ncmpcpp-like
+; binding, and the second is usually more vi-like.
+; Mappings may be left empty (i.e. {}) but most functionality will be lost, as
+; there are no default keybindings.
+
 globals = {
 	"playpause": "p",
 	"next_track": ">",
@@ -75,4 +86,25 @@ globals = {
 	"toggle_crossfade": "x",
 	"switch_panel": "tab",
 	"exit": ["q", "Q"]
+	}
+list = {
+	"left": ["left", "h"],
+	"down": ["down", "j"],
+	"up": ["up", "k"],
+	"right": ["right", "l"],
+	"page up": ["page up", "ctrl b"],
+	"page down": ["page down", "ctrl f"],
+	"home": ["home", "g"],
+	"end": ["end", "G"]
+	}
+playable_list = {
+	"play": "enter",
+	"queue": " "
+	}
+now_playing = {
+	"play": "enter",
+	"delete": ["delete", "d"],
+	"swap_below": ["n", "J"],
+	"swap_above": ["m", "K"],
+	"focus_current": ["o", "'"]
 	}
