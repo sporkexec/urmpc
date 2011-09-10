@@ -1,3 +1,4 @@
+import json
 from ConfigParser import SafeConfigParser as ConfigParser
 
 def truthiness(value):
@@ -27,6 +28,30 @@ def extract_palette(config, section):
 		palette.append((attribute, fg, bg))
 	return palette
 
+class KeyMapper(object):
+	"""Handles keypress configuration."""
+	_actionmap = {}
+	_keymap = {}
+
+	def __init__(self, actionmap, keymap):
+		"""actionmap: {action: callable} where action is a user-visible string.
+		keymap: {action: [keylist]}"""
+		self._actionmap = actionmap
+		for action, keys in keymap.items():
+			if type(keys) in (str, unicode):
+				self._keymap[keys] = action
+			else:
+				for key in keys:
+					self._keymap[key] = action
+
+	def __contains__(self, key):
+		"""Whether key is set and actually does something."""
+		return key in self._keymap and self._keymap[key] in self._actionmap
+
+	def __call__(self, key):
+		assert key in self
+		return self._actionmap[self._keymap[key]]()
+
 class ConfigSection(dict):
 	"""Holds a section of ConfigParser options.
 
@@ -39,10 +64,13 @@ class ConfigSection(dict):
 		if key in self:
 			ret = super(ConfigSection, self).__getitem__(key)
 			try:
-				ret = ret.strip('"')
-			except AttrbuteError as e:
+				ret = json.loads(ret)
+			except ValueError as e:
 				pass
-			return ret
+			try:
+				return ret.encode('utf-8')
+			except AttributeError as e:
+				return ret
 
 		subsections = []
 		for k, v in self.items():
@@ -79,10 +107,13 @@ class Config(ConfigParser):
 			section = ConfigSection(self.items('DEFAULT'))
 			ret = section.__getattr__(key)
 			try:
-				ret = ret.strip('"')
-			except AttrbuteError as e:
+				ret = json.loads(ret)
+			except ValueError as e:
 				pass
-			return ret
+			try:
+				return ret.encode('utf-8')
+			except AttributeError as e:
+				return ret
 
 	def __getitem__(self, key):
 		try:
