@@ -179,7 +179,7 @@ class MainFooter(urwid.WidgetWrap):
 class CurrentSong(urwid.Text):
 	def __init__(self, mpc):
 		self.mpc = mpc
-		super(CurrentSong, self).__init__('')
+		super(CurrentSong, self).__init__('', wrap='clip')
 		signals.listen('idle_player', self._player_update)
 		self._player_update()
 
