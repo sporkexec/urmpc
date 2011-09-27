@@ -29,19 +29,30 @@ class MainFrame(urwid.Frame):
 			'toggle_random': lambda _: self.mpc.toggle('random')(),
 			'toggle_consume': lambda _: self.mpc.toggle('consume')(),
 			'toggle_crossfade': lambda _: self.mpc.toggle_crossfade(),
-			'switch_panel': lambda _: self.toggle_panel(),
+			'library_panel': lambda _: self.get_body().switch('library'),
+			'playlist_panel': lambda _: self.get_body().switch('playlist'),
+			'help_panel': lambda _: self.get_body().switch('help'),
+			'toggle_panels': lambda _: self.toggle_panel(),
 			'exit': lambda _: self.quit(),
 		}
 
 		self.keymap = configuration.KeyMapper(self.actionmap, config.keymap.globals)
+
 		self.librarypanel = LibraryPanel(mpc)
 		self.nowplayingpanel = NowPlayingPanel(mpc)
 		self.helppanel = HelpPanel()
-		self.header = ui_status.MainHeader(mpc)
-		self.footer = ui_status.MainFooter(mpc)
+		self.panel_dict = {
+			'library': self.librarypanel,
+			'playlist': self.nowplayingpanel,
+			'help': self.helppanel,
+		}
 
-		super(MainFrame, self).__init__(self.librarypanel, header=self.header,
-		                                footer=self.footer)
+		body = util.WidgetMux(self.panel_dict, 'library')
+		header = ui_status.MainHeader(mpc)
+		footer = ui_status.MainFooter(mpc)
+
+		super(MainFrame, self).__init__(body, header=header,
+		                                footer=footer)
 
 	def keypress(self, size, key):
 		if key in self.keymap:
@@ -50,12 +61,13 @@ class MainFrame(urwid.Frame):
 			return super(MainFrame, self).keypress(size, key)
 
 	def toggle_panel(self):
-		if self.get_body() is self.librarypanel:
-			self.set_body(self.nowplayingpanel)
-		elif self.get_body() is self.nowplayingpanel:
-			self.set_body(self.helppanel)
-		elif self.get_body() is self.helppanel:
-			self.set_body(self.librarypanel)
+		current = self.get_body().current()
+		panels = config.format.toggle_panels_order
+		try:
+			index = (panels.index(current) + 1) % len(panels)
+		except ValueError as e:
+			index = 0
+		self.get_body().switch(panels[index])
 
 	def quit(self):
 		raise urwid.ExitMainLoop()

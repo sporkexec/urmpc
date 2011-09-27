@@ -18,10 +18,12 @@ crossfade = 3   ; Seconds for crossfade toggle
 volume_diff = 1 ; How much to adjust volume (percentage)
 
 [format]
+;FIXME: Clean up all these sections.
 header.divider = "─"
 library.vdivider = " │ "
 library.ignore_leading_the = True ; Alphabetic sorts
 empty_tag = [None]
+toggle_panels_order = ["library", "playlist"] ; Valid: library, playlist, help
 
 [palette]
 ; See http://excess.org/urwid/wiki/DisplayAttributes for valid colors.
@@ -93,7 +95,10 @@ globals = {
 	"toggle_random": "z",
 	"toggle_consume": "R",
 	"toggle_crossfade": "x",
-	"switch_panel": "tab",
+	"help_panel": "0",
+	"library_panel": "1",
+	"playlist_panel": "2",
+	"toggle_panels": "tab",
 	"exit": ["q", "Q"]
 	}
 list = {
