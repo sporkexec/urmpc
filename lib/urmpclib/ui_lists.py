@@ -362,3 +362,27 @@ class NowPlayingWalker(IOWalker):
 		if 'song' in status and status['state'] != 'stop':
 			self.set_focus(int(status['song']))
 
+class HelpPanelWalker(IOWalker):
+	def _get_items(self):
+		# Get (section, action) combinations for _format to use.
+		out = []
+		for section in config.keymap.keys():
+			#FIXME: Forcing __getitem__ because I failed to override all dict
+			#       magic methods in configuration.ConfigSection.
+			out.append((section, None))
+			for action in config.keymap[section].keys():
+				out.append((section, action))
+		return sorted(out)
+
+	def _format(self, item):
+		section, action = item
+		if action is None:
+			return urwid.Text(('help.section', '\n%s:' % section))
+
+		key = config.keymap[section][action]
+		if key == ' ': key = 'space' # Everything but this is readable...
+
+		actionline = ['    ', ('help.action', '%s:' % action),
+		              ' ', ('help.key', str(key))]
+		return urwid.Text(actionline)
+

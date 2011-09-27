@@ -36,6 +36,7 @@ class MainFrame(urwid.Frame):
 		self.keymap = configuration.KeyMapper(self.actionmap, config.keymap.globals)
 		self.librarypanel = LibraryPanel(mpc)
 		self.nowplayingpanel = NowPlayingPanel(mpc)
+		self.helppanel = HelpPanel()
 		self.header = ui_status.MainHeader(mpc)
 		self.footer = ui_status.MainFooter(mpc)
 
@@ -52,6 +53,8 @@ class MainFrame(urwid.Frame):
 		if self.get_body() is self.librarypanel:
 			self.set_body(self.nowplayingpanel)
 		elif self.get_body() is self.nowplayingpanel:
+			self.set_body(self.helppanel)
+		elif self.get_body() is self.helppanel:
 			self.set_body(self.librarypanel)
 
 	def quit(self):
@@ -98,3 +101,11 @@ class LibraryPanel(urwid.Columns):
 
 		wlist = artists, ('fixed', divlen, div1), albums, ('fixed', divlen, div2), tracks
 		super(LibraryPanel, self).__init__(wlist)
+
+class HelpPanel(urwid.Frame):
+	def __init__(self):
+		header = urwid.Text([('help.header', 'Current keybindings'),
+		         '\nPlease consult the documentation for further information.'])
+		self.list = ui_lists.TreeList(ui_lists.HelpPanelWalker())
+		super(HelpPanel, self).__init__(self.list, header=header)
+

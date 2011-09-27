@@ -26,9 +26,9 @@ empty_tag = [None]
 [palette]
 ; See http://excess.org/urwid/wiki/DisplayAttributes for valid colors.
 header.flags.fg = light cyan
-header.flags.bg = default
+header.flags.bg = black
 header.border.fg = dark gray
-header.border.bg = default
+header.border.bg = black
 
 footer.progress.fg = white
 footer.progress.bg = black
@@ -42,24 +42,33 @@ library.column.bg = black
 library.column.focus.fg = dark cyan,standout
 library.column.focus.bg = black
 library.vdivider.fg = dark gray
-library.vdivider.bg = default
+library.vdivider.bg = black
 
 playlist.time.fg = dark cyan
-playlist.time.bg = default
+playlist.time.bg = black
 playlist.artist.fg = dark magenta
-playlist.artist.bg = default
+playlist.artist.bg = black
 playlist.title.fg = dark green
-playlist.title.bg = default
+playlist.title.bg = black
 playlist.album.fg = dark red
-playlist.album.bg = default
+playlist.album.bg = black
 playlist.time.focus.fg = dark cyan,standout
-playlist.time.focus.bg = default
+playlist.time.focus.bg = black
 playlist.artist.focus.fg = dark magenta,standout
-playlist.artist.focus.bg = default
+playlist.artist.focus.bg = black
 playlist.title.focus.fg = dark green,standout
-playlist.title.focus.bg = default
+playlist.title.focus.bg = black
 playlist.album.focus.fg = dark red,standout
-playlist.album.focus.bg = default
+playlist.album.focus.bg = black
+
+help.header.fg = white
+help.header.bg = black
+help.section.fg = light cyan
+help.section.bg = black
+help.action.fg = dark green
+help.action.bg = black
+help.key.fg = default
+help.key.bg = black
 
 [keymap]
 ; Where multiple keybindings are given, the first is usually an ncmpcpp-like
