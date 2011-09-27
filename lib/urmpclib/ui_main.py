@@ -51,8 +51,7 @@ class MainFrame(urwid.Frame):
 		header = ui_status.MainHeader(mpc)
 		footer = ui_status.MainFooter(mpc)
 
-		super(MainFrame, self).__init__(body, header=header,
-		                                footer=footer)
+		super(MainFrame, self).__init__(body, header=header, footer=footer)
 
 	def keypress(self, size, key):
 		if key in self.keymap:
