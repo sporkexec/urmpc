@@ -37,11 +37,14 @@ class IOWalker(urwid.ListWalker):
 		item = self._get_raw(pos)
 		if item is None:
 			return None, None
-		return self._format(item), pos
+		if id(item) not in self._formatcache:
+			self._formatcache[id(item)] = self._format(item)
+		return self._formatcache[id(item)], pos
 
 	def _reload(self):
 		"""Grab items from datastore and apply any changes, attempting to
 		preserve focus as intelligently as possible."""
+		self._formatcache = {}
 		focus = self.focus
 		item = self._get_raw(focus)
 		self.items[:] = self._get_items()
