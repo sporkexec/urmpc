@@ -114,57 +114,44 @@ class CurrentSongProgress(ProgressBar_):
 		self.set_completion(self.current+1)
 		signals.redraw()
 
-class MainFooter(urwid.WidgetWrap):
+class MainFooter(util.WidgetMux):
 	mpc = None
 	_notification = None, None
 	_notification_alarm = None
 
-	# Valid widgets we can be rendering
-	_components = '_progress_bar', '_notification_bar'
-	_progress_bar, _notification_bar = None, None
-
 	def __init__(self, mpc):
 		self.mpc = mpc
-		self._notification_bar = urwid.Text('')
-		self._progress_bar = CurrentSongProgress(mpc,
-		                                         'footer.progress',
-		                                         'footer.progress.elapsed',
-		                                         satt='footer.progress.smoothed')
+		notifications = urwid.Text('')
+		progress = CurrentSongProgress(mpc,
+			 'footer.progress',
+			 'footer.progress.elapsed',
+			 satt='footer.progress.smoothed')
+
+		widgets = {'progress_bar': progress, 'notification_bar': notifications}
+		super(MainFooter, self).__init__(widgets, 'progress_bar')
+
 		signals.listen('user_notification', self.notify)
 		signals.listen('idle_update', self._notify_update)
 		signals.listen('idle_playlist', self._playlist_update)
 
-		super(MainFooter, self).__init__(self._progress_bar)
-		self._change_current()
-
-	def _change_current(self, name=None):
-		if name in self._components:
-			self._w = getattr(self, name)
-		elif name is None:
-			# Any logic to automatically determine current goes here.
-			self._w = self._progress_bar
 
 	def notify(self, message, interval=1.0): #TODO: Config interval default.
 		"""Adds a notification to be displayed in the status bar.
 		In addition to the mandatory message to be displayed, you may supply a
 		desired duration in the interval parameter. This is a maximum duration,
 		as any subsequent notification immediately overrides the current one."""
-		#TODO?: Add 'level' param: ('info', 'warn', 'error', 'crit', etc.)
-		#      and highlight accordingly, maybe let higher levels get priority.
 		if self._notification_alarm:
 			signals.alarm_remove(self._notification_alarm)
 			self._notification_alarm = None
-		self._change_current('_notification_bar')
 		self._notification = None, None
-		self._notification_bar.set_text(str(message))
 		self._notification_alarm = signals.alarm_in(interval, self._clear_notification)
-		signals.redraw()
+		self.widget_dict['notification_bar'].set_text(str(message))
+		self.switch('notification_bar')
 
 	def _clear_notification(self, *_):
 		self._notification = (None, None)
 		self._notification_alarm = None
-		self._change_current(None)
-		signals.redraw()
+		self.switch('progress_bar')
 		return False
 
 	def _notify_update(self):
