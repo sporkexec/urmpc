@@ -345,18 +345,22 @@ class NowPlayingWalker(IOWalker):
 			self._reload()
 
 	def swap_down(self):
-		this, below = self._get_raw(self.focus), self._get_raw(self.focus+1)
+		f = self.focus
+		this, below = self._get_raw(f), self._get_raw(f+1)
 		if this is None or below is None:
 			return
 		this, below = this['id'], below['id']
+		self.items[f], self.items[f+1] = self.items[f+1], self.items[f]
 		self.focus += 1
 		self.mpc.swapid(this, below)
 
 	def swap_up(self):
-		this, above = self._get_raw(self.focus), self._get_raw(self.focus-1)
+		f = self.focus
+		this, above = self._get_raw(f), self._get_raw(f-1)
 		if this is None or above is None:
 			return
 		this, above = this['id'], above['id']
+		self.items[f], self.items[f-1] = self.items[f-1], self.items[f]
 		self.focus -= 1
 		self.mpc.swapid(this, above)
 
