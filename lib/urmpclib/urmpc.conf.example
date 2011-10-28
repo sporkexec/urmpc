@@ -118,7 +118,7 @@ playable_list = {
 now_playing = {
 	"play": "enter",
 	"delete": ["delete", "d"],
-	"swap_below": ["n", "J"],
-	"swap_above": ["m", "K"],
+	"swap_below": "J",
+	"swap_above": "K",
 	"focus_current": ["o", "'"]
 	}
