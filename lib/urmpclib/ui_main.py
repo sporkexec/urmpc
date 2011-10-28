@@ -54,10 +54,10 @@ class MainFrame(urwid.Frame):
 		super(MainFrame, self).__init__(body, header=header, footer=footer)
 
 	def keypress(self, size, key):
-		if key in self.keymap:
-			return self.keymap(size, key)
-		else:
-			return super(MainFrame, self).keypress(size, key)
+		key = super(MainFrame, self).keypress(size, key)
+		if key is not None:
+			key = self.keymap(size, key)
+		return key
 
 	def toggle_panel(self):
 		current = self.get_body().current()

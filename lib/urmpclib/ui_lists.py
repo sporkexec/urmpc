@@ -238,10 +238,10 @@ class TreeList(urwid.ListBox):
 		return super(TreeList, self).__init__(*args, **kwargs)
 
 	def keypress(self, size, key):
-		if key in self.keymap:
-			return self.keymap(size, key)
-		else:
-			return super(TreeList, self).keypress(size, key)
+		key = super(TreeList, self).keypress(size, key)
+		if key is not None:
+			key = self.keymap(size, key)
+		return key
 
 	def _keypress_up(self, size):
 		middle, top, bottom = self.calculate_visible(size, True)
@@ -275,7 +275,7 @@ class PlayableList(TreeList):
 		super(PlayableList, self).__init__(*args, **kwargs)
 		actionmap = {
 			'play': lambda _: self.body.play_current(),
-			'queue': lambda _: self.body.queue_current(),
+			'queue': lambda _: self.body.queue_current() and None,
 		}
 		self.keymap.update(actionmap, config.keymap.playable_list)
 

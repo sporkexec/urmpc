@@ -51,8 +51,9 @@ class KeyMapper(object):
 		return key in self._keymap and self._keymap[key] in self._actionmap
 
 	def __call__(self, size, key):
-		assert key in self
-		return self._actionmap[self._keymap[key]](size)
+		if key in self:
+			return self._actionmap[self._keymap[key]](size)
+		return key
 
 class ConfigSection(dict):
 	"""Holds a section of ConfigParser options.
