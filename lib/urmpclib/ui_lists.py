@@ -128,21 +128,29 @@ class AlbumWalker(IOWalker):
 		super(AlbumWalker, self).__init__()
 
 	def _get_items(self):
-		return sorted(self.mpc.list('album', 'artist', self.artist))
+		albums = self.mpc.list('album', 'artist', self.artist)
+		dates = [self.mpc.list('date', 'album', album, 'artist', self.artist)[0][:4] for album in albums]
+		data = [dict([['album', d[0]], ['date', d[1]]]) for d in zip(albums, dates)]
+		return sorted(data, key=lambda d: d['date'])
 
 	def _format(self, item):
-		if item == '':
-			item = config.format.empty_tag
-		item = urwid.Text(item)
-		item.set_wrap_mode('clip')
-		item = urwid.AttrMap(item,
+		album = item['album']
+		date = item['date']
+		if album == '':
+			album = config.format.empty_tag
+		if date == '':
+			date = '    '
+
+		output = urwid.Text("(%s) %s" % (date, album))
+		output.set_wrap_mode('clip')
+		output = urwid.AttrMap(output,
 		                     {None: 'library.column'},
 		                     {None: 'library.column.focus'})
-		return item
+		return output
 
 	def set_focus(self, focus):
 		super(AlbumWalker, self).set_focus(focus)
-		urwid.emit_signal(self, 'change', (self.artist, self.items[focus]))
+		urwid.emit_signal(self, 'change', (self.artist, self.items[focus]['album']))
 
 	def change_artist(self, value):
 		self.artist = value
@@ -158,11 +166,11 @@ class AlbumWalker(IOWalker):
 		if item is None:
 			return None
 		song_id = None
-		for song in self.mpc.find('artist', self.artist, 'album', item):
+		for song in self.mpc.find('artist', self.artist, 'album', item['album']):
 			sid = self.mpc.addid(song['file'])
 			if song_id is None:
 				song_id = sid
-		signals.emit('user_notification', 'Adding album "%s" - %s' % (item, self.artist))
+		signals.emit('user_notification', 'Adding album "%s" - %s' % (item['album'], self.artist))
 		return song_id
 
 
@@ -184,7 +192,8 @@ class TrackWalker(IOWalker):
 			text = item['file']
 		if text == '':
 			text = config.format.empty_tag
-		text = urwid.Text(text)
+		time = str(util.timedelta(seconds=int(item['time'])))
+		text = urwid.Text("(%s) %s" % (time, text))
 		text.set_wrap_mode('clip')
 		text = urwid.AttrMap(text,
 		                     {None: 'library.column'},
