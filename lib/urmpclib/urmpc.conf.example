@@ -109,7 +109,10 @@ list = {
 	"page up": ["page up", "ctrl b"],
 	"page down": ["page down", "ctrl f"],
 	"home": ["home", "g"],
-	"end": ["end", "G"]
+	"end": ["end", "G"],
+	"search": "/",
+	"search_next": "n",
+	"search_prev": "N"
 	}
 playable_list = {
 	"play": "enter",

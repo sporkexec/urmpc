@@ -242,8 +242,12 @@ class TreeList(urwid.ListBox):
 			'down': lambda s: self._keypress_down(s),
 			'home': lambda _: self._scroll_top(),
 			'end': lambda _: self._scroll_bottom(),
+			'search': lambda _: self._search_init(),
+			'search_next': lambda _: self._search_next(),
+			'search_prev': lambda _: self._search_prev(),
 		}
 		self.keymap = configuration.KeyMapper(actionmap, config.keymap.list)
+		self.search_results = [0, 1, 3, 5, 10, 11, 12, 13, 14, 15]
 		return super(TreeList, self).__init__(*args, **kwargs)
 
 	def keypress(self, size, key):
@@ -278,6 +282,44 @@ class TreeList(urwid.ListBox):
 	def _scroll_bottom(self):
 		self.set_focus(len(self.body.items)-1)
 
+	def _search_init(self):
+		pass
+
+	def _search_get_next(self):
+		if len(self.search_results) == 0:
+			return None
+		w, pos = self.body.get_focus()
+		index = None
+		for i in xrange(len(self.search_results)):
+			if pos < self.search_results[i]:
+				index = i
+				break
+		else:
+			index = 0
+
+		if len(self.search_results) == 1 or index is None:
+			index = 0
+		return index
+
+	def _search_next(self):
+		if len(self.search_results) == 0:
+			return
+		self.set_focus(self.search_results[self._search_get_next()])
+
+	def _search_prev(self):
+		if len(self.search_results) == 0:
+			return
+		prevpos = None
+		nextpos = self._search_get_next()
+		w, pos = self.body.get_focus()
+		try:
+			self.search_results.index(pos)
+			prevpos = nextpos - 2 # Above succeeded, we're already on a result so need to go 2 back.
+		except ValueError as e:
+			prevpos = nextpos - 1 # We were advanced from some non-result position to next result, just go back 1.
+		if len(self.search_results) == 1 or prevpos is None:
+			prevpos = 0
+		self.set_focus(self.search_results[prevpos])
 
 class PlayableList(TreeList):
 	def __init__(self, *args, **kwargs):
