@@ -1,5 +1,6 @@
 import urwid
 import mpd
+import re
 
 import signals
 import util
@@ -242,7 +243,8 @@ class TreeList(urwid.ListBox):
 			'down': lambda s: self._keypress_down(s),
 			'home': lambda _: self._scroll_top(),
 			'end': lambda _: self._scroll_bottom(),
-			'search': lambda _: self._search_init(),
+			'search_begin_forward': lambda _: self._search_init(reverse=False),
+			'search_begin_backward': lambda _: self._search_init(reverse=True),
 			'search_next': lambda _: self._search_next(),
 			'search_prev': lambda _: self._search_prev(),
 		}
@@ -283,10 +285,26 @@ class TreeList(urwid.ListBox):
 		self.set_focus(len(self.body.items)-1)
 
 	def _search_submit(self, search_query):
-		pass
+		results = []
+		pattern = re.compile(search_query, re.IGNORECASE)
+		i = 0
+		for item in self.body.items:
+			if type(item) is str:
+				text = item
+			else:
+				text = item.get_text()[0]
+			if pattern.search(text) is not None:
+				results.append(i)
+			i += 1
+		self.search_results = results
+		if self._search_reverse:
+			self._search_prev()
+		else:
+			self._search_next()
 
-	def _search_init(self):
+	def _search_init(self, reverse=False):
 		signals.emit('search_begin', self._search_submit)
+		self._search_reverse = reverse
 
 	def _search_get_next(self):
 		if len(self.search_results) == 0:

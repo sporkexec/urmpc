@@ -110,7 +110,8 @@ list = {
 	"page down": ["page down", "ctrl f"],
 	"home": ["home", "g"],
 	"end": ["end", "G"],
-	"search": "/",
+	"search_begin_forward": "/",
+	"search_begin_backward": "?",
 	"search_next": "n",
 	"search_prev": "N"
 	}
