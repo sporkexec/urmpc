@@ -291,6 +291,8 @@ class TreeList(urwid.ListBox):
 		for item in self.body.items:
 			if type(item) is str:
 				text = item
+			elif type(item) is dict:
+				text = ' '.join(item.values())
 			else:
 				text = item.get_text()[0]
 			if pattern.search(text) is not None:
