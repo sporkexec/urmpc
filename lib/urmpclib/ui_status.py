@@ -114,6 +114,25 @@ class CurrentSongProgress(ProgressBar_):
 		self.set_completion(self.current+1)
 		signals.redraw()
 
+class SearchInput(urwid.Edit):
+	def __init__(self):
+		super(SearchInput, self).__init__(caption='Search for: ')
+
+	def search_begin(self, submit_callback):
+		self.set_edit_text('')
+		self._submit_callback = submit_callback
+
+	def search_submit(self):
+		signals._mainloop.widget.set_focus('body')
+		self._submit_callback(self.get_edit_text())
+
+	def keypress(self, size, key):
+		key = super(SearchInput, self).keypress(size, key)
+		if key == 'enter':
+			self.search_submit()
+			return None
+		return key
+
 class MainFooter(util.WidgetMux):
 	mpc = None
 	_notification = None, None
@@ -127,12 +146,15 @@ class MainFooter(util.WidgetMux):
 			 'footer.progress.elapsed',
 			 satt='footer.progress.smoothed')
 
-		widgets = {'progress_bar': progress, 'notification_bar': notifications}
+		search_bar = SearchInput()
+
+		widgets = {'progress_bar': progress, 'notification_bar': notifications, 'search_bar': search_bar}
 		super(MainFooter, self).__init__(widgets, 'progress_bar')
 
 		signals.listen('user_notification', self.notify)
 		signals.listen('idle_update', self._notify_update)
 		signals.listen('idle_playlist', self._playlist_update)
+		signals.listen('search_begin', self._search_begin)
 
 
 	def notify(self, message, interval=1.0): #TODO: Config interval default.
@@ -162,6 +184,14 @@ class MainFooter(util.WidgetMux):
 	def _playlist_update(self):
 		if int(self.mpc.status()['playlistlength']) == 0:
 			signals.emit('user_notification', 'Cleared playlist!')
+
+	def _search_begin(self, submit_callback):
+		self.switch('search_bar')
+		def intercept_callback(*args, **kwargs):
+			self.switch('progress_bar')
+			submit_callback(*args, **kwargs)
+		self.widget_dict['search_bar'].search_begin(intercept_callback)
+		signals._mainloop.widget.set_focus('footer')
 
 class CurrentSong(urwid.Text):
 	def __init__(self, mpc):

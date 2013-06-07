@@ -282,8 +282,11 @@ class TreeList(urwid.ListBox):
 	def _scroll_bottom(self):
 		self.set_focus(len(self.body.items)-1)
 
-	def _search_init(self):
+	def _search_submit(self, search_query):
 		pass
+
+	def _search_init(self):
+		signals.emit('search_begin', self._search_submit)
 
 	def _search_get_next(self):
 		if len(self.search_results) == 0:
