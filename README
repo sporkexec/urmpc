@@ -7,8 +7,9 @@ this violates one of Unix's central tenets (do one thing and do it well) and
 because there are already many fine tag editors on the market.
 
 This software is still under heavy development but already accomplishes nearly
-everything the author needs on a typical day. Features such as search and saved
-playlists are not yet implemented, however, so your mileage may vary.
+everything the author needs on a typical day. Features such as saved
+playlist loading/manipulation are not yet implemented, however, so your mileage
+may vary.
 
 
 Installation
@@ -25,11 +26,13 @@ $ cd bin && ./urmpc
 
 Usage
 
-Almost exactly like ncmpcpp.
+Almost exactly like ncmpcpp. See https://github.com/sporkexec/urmpc/blob/master/lib/urmpclib/urmpc.conf.example
+for default keybindings or '0' (by default) to view configured keybindings.
+Config file will be read from `~/.urmpc.conf`.
 
 In Library panel:
-	Space: queue
-	Enter: queue and play
+	Space: enqueue
+	Enter: enqueue and play
 
 In Playlist panel:
 	d, Delete: delete from playlist
@@ -38,8 +41,18 @@ In Playlist panel:
 	J: move this track down
 	o: jump to currently playing track
 
+In any list:
+	We support vi-like navigation (hjkl) as well as arrow keys.
+	g, Home: jump to top of list
+	G, End: jump to end of list
+	Ctrl+f, PgDn: scroll list down one page
+	Ctrl+b, PgUp: scroll list up one page
+	/: search forwards
+	?: search backwards
+	n: jump to next search result
+	N: jump to previous search result
+
 Global Keys:
-	We support vi-like navigation as well as arrow keys. g is Home, G is end.
 	p: play/pause
 	>: next track
 	<: previous track
@@ -58,5 +71,6 @@ Global Keys:
 	x: toggle crossfade
 	u: force database update
 
-	tab: switch between Library and Playlist panels
+	Tab: switch between Library and Playlist panels
+	0: view live keybindings
 	q, Q: quit
