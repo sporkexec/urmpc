@@ -3,7 +3,7 @@ urmpc
 urmpc is a console MPD client written in Python using the urwid library. It is
 heavily influenced by ncmpcpp, but aims to be more configurable and have less
 feature bloat. For example, urmpc does not aspire to have a tag editor because
-this violates one of Unix's central tenet's (do one thing and do it well) and
+this violates one of Unix's central tenets (do one thing and do it well) and
 because there are already many fine tag editors on the market.
 
 This software is still under heavy development but already accomplishes nearly
