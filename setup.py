@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='urmpc',
-	version='0.1.0',
+	version='0.1.1',
 	description='MPD client using urwid',
 	author='Jacob Courtneay',
 	author_email='jacob@sporkexec.com',
