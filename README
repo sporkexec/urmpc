@@ -34,8 +34,8 @@ In Library panel:
 In Playlist panel:
 	d, Delete: delete from playlist
 	Enter: play this track
-	n: move this track up
-	m: move this track down
+	K: move this track up
+	J: move this track down
 	o: jump to currently playing track
 
 Global Keys:
