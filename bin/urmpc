@@ -1,2 +1,2 @@
 #!/bin/sh
-/usr/bin/env python -m urmpclib.__init__
+/usr/bin/env python2 -m urmpclib.__init__
