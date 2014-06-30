@@ -83,12 +83,10 @@ class MPDClient(mpd.MPDClient):
 
 	def toggle_crossfade(self):
 		# Really, 'xfade'? Four characters saved, good job!
-		value = int(self.status()['xfade'])
-		if value == 0:
-			value = int(config.mpd.crossfade)
-		else:
+		if 'xfade' in self.status():
 			value = 0
-		# With inconsistency as the cherry on top.
+		else:
+			value = int(config.mpd.crossfade)
 		self.crossfade(value)
 
 	def volume_up(self):

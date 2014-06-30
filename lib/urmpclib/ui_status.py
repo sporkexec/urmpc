@@ -238,7 +238,7 @@ class DaemonFlags(urwid.Text):
 		flags['Random'] = status['random'] == '1'
 		flags['Single'] = status['single'] == '1'
 		flags['Consume'] = status['consume'] == '1'
-		flags['Crossfade'] = int(status['xfade']) # not boolean
+		flags['Crossfade'] = int(status['xfade']) if 'xfade' in status else 0 # not boolean
 		flags['Update'] = 'updating_db' in status # not strictly boolean
 		return flags
 
